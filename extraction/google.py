@@ -1,0 +1,1 @@
+# Google data extraction - use Google Trends to save the daily searches of one or more keywords
