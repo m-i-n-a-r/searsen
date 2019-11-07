@@ -105,3 +105,6 @@ venv.bak/
 
 # Generated models
 *.h5
+
+# Twitter app credentials
+extraction/twitter_app_credentials.py
