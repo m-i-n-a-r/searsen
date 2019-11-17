@@ -1,6 +1,7 @@
 # Google data extraction - use Google Trends to save the daily searches of one or more keywords
 
 from pytrends.request import TrendReq
+from pytrends import dailydata
 
 # Variabled needed (tries to take it from user or use a default array)
 separator = ','
@@ -9,18 +10,23 @@ input_keywords = input('Insert an array of comma separated keywords: ')
 if(not input_keywords.strip()): keywords = ['trump', 'clinton']
 else: keywords = input_keywords.split(separator)
 file_name = data_path + '_'.join(keywords).replace(' ', '') + '_interest_over_time.csv'
+time_window = 'all'
 
 
 # Login to Google. Only need to run this once, the rest of requests will use the same session.
 pytrend = TrendReq()
 # Create payload and capture API tokens. Only needed for interest_over_time(), interest_by_region() & related_queries()
-pytrend.build_payload(kw_list=keywords)
+pytrend.build_payload(kw_list=keywords, timeframe=time_window)
 
 # Interest Over Time
 interest_over_time_df = pytrend.interest_over_time()
 print(interest_over_time_df)
 print('')
 interest_over_time_df.to_csv(file_name, sep=';', encoding='utf-8')
+
+# Interest Over Time Daily (gives error)
+#interest_over_time_daily_df = dailydata.get_daily_data('trump', 2019, 1, 2019, 10, geo = 'BR')
+#print(interest_over_time_daily_df)
 
 # Related Queries, returns a dictionary of dataframes
 related_queries_dict = pytrend.related_queries()
@@ -31,15 +37,3 @@ print('')
 suggestions_dict = pytrend.suggestions(keyword=keywords[0])
 print(suggestions_dict)
 print('')
-
-# Get Google Hot Trends data
-#trending_searches_df = pytrend.trending_searches()
-#print(trending_searches_df.head())
-
-# Get Google Today Hot Trends data
-#today_searches_df = pytrend.today_searches()
-#print(today_searches_df.head())
-
-# Get Google Top Charts
-#top_charts_df = pytrend.top_charts(2018, hl='en-US', tz=300, geo='GLOBAL')
-#print(top_charts_df.head())
