@@ -3,13 +3,13 @@
 from pytrends.request import TrendReq
 from pytrends import dailydata
 
-# Variabled needed (tries to take it from user or use a default array)
+# Variabled needed (tries to take it from user or use default)
 separator = ','
-input_keywords = input('Insert an array of comma separated keywords: (default: trump, clinton)')
+input_keywords = input('Insert an array of comma separated keywords (default: trump, clinton)')
 if(not input_keywords.strip()): keywords = ['trump', 'clinton']
 else: keywords = input_keywords.split(separator)
 input_time_window = input('''
-Insert the time window (default: 2): 
+Insert the time window (default: 2) 
 1 - 2004 to today (monthly) 
 2 - Last 5 years (weekly)
 3 - Last 3 months (daily)
