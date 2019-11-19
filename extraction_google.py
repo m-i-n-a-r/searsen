@@ -3,26 +3,6 @@
 from pytrends.request import TrendReq
 from pytrends import dailydata
 
-# Variabled needed (tries to take it from user or use default)
-separator = ','
-input_keywords = input('Insert an array of comma separated keywords (default: trump, clinton)')
-if(not input_keywords.strip()): keywords = ['trump', 'clinton']
-else: keywords = input_keywords.split(separator)
-input_time_window = input('''
-Insert the time window (default: 2) 
-1 - 2004 to today (monthly) 
-2 - Last 5 years (weekly)
-3 - Last 3 months (daily)
-4 - Last week (hourly)
--> ''')
-if(input_time_window == '1'): time_window = 'all'
-elif(input_time_window == '2'): time_window = 'today 5-y'
-elif(input_time_window == '3'): time_window = 'today 3-m'
-elif(input_time_window == '4'): time_window = 'now 7-d'
-else: 
-    print ('Invalid value, default set')
-    time_window = 'today 5-y'
-
 def fetch_csv_google(keywords, time_window):
     # Csv name
     data_path = 'data/google/'
@@ -54,4 +34,27 @@ def fetch_csv_google(keywords, time_window):
     print(suggestions_dict)
     print('')
 
-fetch_csv_google(keywords, time_window)
+# Avoid to run the script when imported
+if __name__ == '__main__':
+    # Variabled needed (tries to take it from user or use default)
+    separator = ','
+    input_keywords = input('Insert an array of comma separated keywords (default: trump, clinton) -> ')
+    if(not input_keywords.strip()): keywords = ['trump', 'clinton']
+    else: keywords = input_keywords.split(separator)
+    input_time_window = input(
+    '''
+Insert the time window (default: 2) 
+1 - 2004 to today (monthly) 
+2 - Last 5 years (weekly)
+3 - Last 3 months (daily)
+4 - Last week (hourly)
+-> ''')
+    if(input_time_window == '1'): time_window = 'all'
+    elif(input_time_window == '2'): time_window = 'today 5-y'
+    elif(input_time_window == '3'): time_window = 'today 3-m'
+    elif(input_time_window == '4'): time_window = 'now 7-d'
+    else: 
+        print ('Invalid value, default set')
+        time_window = 'today 5-y'
+
+    fetch_csv_google(keywords, time_window)
