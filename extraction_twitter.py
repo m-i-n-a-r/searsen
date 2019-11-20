@@ -17,7 +17,6 @@ def fetch_csv_twitter(keyword):
 
     # append all tweet data to list
     items = tweepy.Cursor(api.search, q=keyword, count=10, since="2019-11-03").items()
-    print(items)
     for tweet in items:
         tweets.append(tweet)
 
@@ -27,11 +26,12 @@ def fetch_csv_twitter(keyword):
     # use pandas to save dataframe to csv
     tweets_df.to_csv(file_name)
 
+
 # Avoid to run the script when imported
 if __name__ == '__main__':
     # Variabled needed (tries to take it from user or use default)
     separator = ','
-    input_keyword = input('Insert a keyword (default: trump) -> ')
+    input_keyword = input('\nInsert a keyword (default: trump) -> ')
     if(not input_keyword.strip()): keyword = 'trump'
     else: keyword = input_keyword
 

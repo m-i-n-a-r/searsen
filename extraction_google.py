@@ -34,11 +34,12 @@ def fetch_csv_google(keywords, time_window):
     print(suggestions_dict)
     print('')
 
+
 # Avoid to run the script when imported
 if __name__ == '__main__':
     # Variabled needed (tries to take it from user or use default)
     separator = ','
-    input_keywords = input('Insert an array of comma separated keywords (default: trump, clinton) -> ')
+    input_keywords = input('\nInsert an array of comma separated keywords (default: trump, clinton) -> ')
     if(not input_keywords.strip()): keywords = ['trump', 'clinton']
     else: keywords = input_keywords.split(separator)
     input_time_window = input(
@@ -54,7 +55,7 @@ Insert the time window (default: 2)
     elif(input_time_window == '3'): time_window = 'today 3-m'
     elif(input_time_window == '4'): time_window = 'now 7-d'
     else: 
-        print ('Invalid value, default set')
+        print ('\nInvalid value, default set')
         time_window = 'today 5-y'
 
     fetch_csv_google(keywords, time_window)
