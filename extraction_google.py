@@ -1,13 +1,14 @@
 # Google data extraction - use Google Trends to save the daily searches of one or more keywords
 
+import os
 from pytrends.request import TrendReq
 from pytrends import dailydata
 
 def fetch_csv_google(keywords, time_window):
     # Csv name
     data_path = 'data/google/'
-    file_name = data_path + '_'.join(keywords).replace(' ', '') + '_interest_over_time.csv'
-    print(file_name)
+    if not os.path.exists(data_path): os.makedirs(data_path)
+    file_name = data_path + '_'.join(keywords).replace(' ', '') + '_google_interest.csv'
 
     # Login to Google. Only need to run this once, the rest of requests will use the same session.
     pytrend = TrendReq()
@@ -16,8 +17,7 @@ def fetch_csv_google(keywords, time_window):
 
     # Interest Over Time
     interest_over_time_df = pytrend.interest_over_time()
-    print(interest_over_time_df)
-    print('')
+    #print(interest_over_time_df + '\n')
     interest_over_time_df.to_csv(file_name, sep=';', encoding='utf-8')
 
     # Interest Over Time Daily (gives error)
@@ -25,14 +25,12 @@ def fetch_csv_google(keywords, time_window):
     #print(interest_over_time_daily_df)
 
     # Related Queries, returns a dictionary of dataframes
-    related_queries_dict = pytrend.related_queries()
-    print(related_queries_dict)
-    print('')
+    #related_queries_dict = pytrend.related_queries()
+    #print(related_queries_dict + '\n')
 
     # Get Google Keyword Suggestions
-    suggestions_dict = pytrend.suggestions(keyword=keywords[0])
-    print(suggestions_dict)
-    print('')
+    #suggestions_dict = pytrend.suggestions(keyword=keywords[0])
+    #print(suggestions_dict + '\n')
 
 
 # Avoid to run the script when imported

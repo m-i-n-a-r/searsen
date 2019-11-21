@@ -1,5 +1,6 @@
 # Twitter data extraction - use Tweepy to extract the data about a group of hashtags
 
+import os
 import tweepy
 import csv
 import pandas as pd
@@ -12,6 +13,7 @@ api = tweepy.API(auth, wait_on_rate_limit=True)
 def fetch_csv_twitter(keyword):
     # Csv name
     data_path = 'data/twitter/'
+    if not os.path.exists(data_path): os.makedirs(data_path)
     file_name = data_path + keyword.replace(' ', '') + '_twitter_interest.csv'
     tweets = []
 

@@ -38,13 +38,14 @@ Choose the data folder (default: 1)
 
     # Plot the selected csv
     plot_path = 'plots/'
-    plot_name = files[value] + '_plot.png'
+    if not os.path.exists(plot_path): os.mkdir(plot_path)
+    plot_name = files[value][:-4] + '_plot.png'
     df = pd.read_csv(file_path, parse_dates=[0], infer_datetime_format=True, sep=';')
-    plt.plot(df.iloc[:,1], df.iloc[:,1], 'ro--')
+    plt.plot(df.iloc[:,0], df.iloc[:,1], 'ro--')
     print('\nPreparing the plot...')
+    plt.savefig(plot_path + plot_name, dpi = 300)
+    print('\nPlot saved in plots/ folder\n')
     plt.show()
-    print('\nPlot saved in plot/ folder\n')
-    plt.savefig(plot_path + plot_name, dpi = 400)
 
 
 # Main part of Searsen, to guide the user through the entire process
