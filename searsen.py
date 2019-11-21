@@ -37,10 +37,14 @@ Choose the data folder (default: 1)
     file_path = data_path_google + files[value]
 
     # Plot the selected csv
+    plot_path = 'plots/'
+    plot_name = files[value] + '_plot.png'
     df = pd.read_csv(file_path, parse_dates=[0], infer_datetime_format=True, sep=';')
-    plt.plot(df['date'], df.iloc[:,1], 'ro--')
-    print('\nPreparing the plot...\n')
+    plt.plot(df.iloc[:,1], df.iloc[:,1], 'ro--')
+    print('\nPreparing the plot...')
     plt.show()
+    print('\nPlot saved in plot/ folder\n')
+    plt.savefig(plot_path + plot_name, dpi = 400)
 
 
 # Main part of Searsen, to guide the user through the entire process
