@@ -4,7 +4,8 @@ import os
 from pytrends.request import TrendReq
 from pytrends import dailydata
 
-def fetch_csv_google(keywords, time_window):
+# Fetch the use of a set of keywords in a specified time window
+def fetch_timeseries_google(keywords, time_window):
     # Csv name
     data_path = 'data/google/'
     if not os.path.exists(data_path): os.makedirs(data_path)
@@ -17,20 +18,24 @@ def fetch_csv_google(keywords, time_window):
 
     # Interest Over Time
     interest_over_time_df = pytrend.interest_over_time()
-    #print(interest_over_time_df + '\n')
     interest_over_time_df.to_csv(file_name, sep=';', encoding='utf-8')
-
-    # Interest Over Time Daily (gives error)
-    #interest_over_time_daily_df = dailydata.get_daily_data('trump', 2019, 1, 2019, 10, geo = 'BR')
-    #print(interest_over_time_daily_df)
 
     # Related Queries, returns a dictionary of dataframes
     #related_queries_dict = pytrend.related_queries()
-    #print(related_queries_dict + '\n')
-
     # Get Google Keyword Suggestions
     #suggestions_dict = pytrend.suggestions(keyword=keywords[0])
-    #print(suggestions_dict + '\n')
+
+# Get the Google hot queries
+def fetch_trending_google():
+    # Login to Google. Only need to run this once, the rest of requests will use the same session.
+    pytrend = TrendReq()
+
+    # Get Google Hot Trends data
+    #trends_us = pytrend.trending_searches(pn='united_states')
+    trends_it_df = pytrend.trending_searches(pn='italy')
+    trends_it_final = trends_it_df.iloc[:,0].tolist()
+
+    return trends_it_final
 
 
 # Avoid to run the script when imported
@@ -56,4 +61,4 @@ Insert the time window (default: 2)
         print ('\nInvalid value, default set')
         time_window = 'today 5-y'
 
-    fetch_csv_google(keywords, time_window)
+    fetch_timeseries_google(keywords, time_window)
