@@ -1,7 +1,7 @@
 # Searsen - search vs sentiment
 <p align="center>
-	<img src="https://img.shields.io/badge/status-work%20in%20progress-orange" />
-	<img src="https://img.shields.io/badge/version-0.2-blue" />
+	<img src="https://img.shields.io/badge/status-work%20in%20progress-orange" width="20% />
+	<img src="https://img.shields.io/badge/version-0.2-blue" width="20% />
 </p>
 
 ### An attempt to use Google Trends and Twitter to find the relation between searches and opinions
