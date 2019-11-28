@@ -112,3 +112,6 @@ twitter_app_credentials.py
 # Data and plots folders
 data/*
 plots/*
+
+# Amazon AWS Keys
+*.pem
