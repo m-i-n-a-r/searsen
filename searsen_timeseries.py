@@ -48,7 +48,7 @@ Choose the data folder (default: 1)
     plt.show()
 
 
-# Main part of Searsen, to guide the user through the entire process
+# Main part of Searsen timeseries, to guide the user through the entire process
 extraction_pref = input('''
 *************** SEARSEN ***************
 Extract and compare searches and sentiment

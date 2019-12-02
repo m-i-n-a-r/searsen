@@ -4,7 +4,7 @@ import os
 import tweepy
 import csv
 import pandas as pd
-from twitter_app_credentials import *
+from searsen_credentials import consumer_key, consumer_secret, access_token, access_token_secret
 
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
@@ -37,6 +37,10 @@ def fetch_trending_twitter():
     trends_it_final = [trend['name'].replace('#', '') for trend in trends_name]
     
     return trends_it_final
+
+# Fetch a sample of n tweets for every keyword in a given list
+def fetch_sample(keywords):
+    return keywords
 
 
 # Avoid to run the script when imported

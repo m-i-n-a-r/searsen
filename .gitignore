@@ -107,7 +107,7 @@ venv.bak/
 *.h5
 
 # Twitter app credentials
-twitter_app_credentials.py
+searsen_credentials.py
 
 # Data and plots folders
 data/*
