@@ -1,29 +1,27 @@
-# Google data extraction - use Google Trends to save the daily searches of one or more keywords
+# Google data extraction - using Pytrends
 
 import os
 from pytrends.request import TrendReq
 from pytrends import dailydata
 
 # Fetch the use of a set of keywords in a specified time window
-def fetch_timeseries_google(keywords, time_window):
-    # Csv name
-    data_path = 'data/google/'
-    if not os.path.exists(data_path): os.makedirs(data_path)
-    file_name = data_path + '_'.join(keywords).replace(' ', '') + '_google_interest.csv'
-
-    # Login to Google. Only need to run this once, the rest of requests will use the same session.
+def fetch_timeseries_google(keywords, time_window, save_csv = True):
+    # Login to Google and create the payload
     pytrend = TrendReq()
-    # Create payload and capture API tokens. Only needed for interest_over_time(), interest_by_region() & related_queries()
     pytrend.build_payload(kw_list=keywords, timeframe=time_window)
 
     # Interest Over Time
     interest_over_time_df = pytrend.interest_over_time()
-    interest_over_time_df.to_csv(file_name, sep=';', encoding='utf-8')
 
-    # Related Queries, returns a dictionary of dataframes
-    #related_queries_dict = pytrend.related_queries()
-    # Get Google Keyword Suggestions
-    #suggestions_dict = pytrend.suggestions(keyword=keywords[0])
+    # Save in a csv if needed
+    if(save_csv):
+        # Csv naming and path, converting to csv using Pandas
+        data_path = 'data/google/'
+        if not os.path.exists(data_path): os.makedirs(data_path)
+        file_name = data_path + '_'.join(keywords).replace(' ', '') + '_google_interest.csv'
+        interest_over_time_df.to_csv(file_name, sep=';', encoding='utf-8')
+    
+    return interest_over_time_df
 
 # Get the Google hot queries
 def fetch_trending_google():

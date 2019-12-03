@@ -1,4 +1,4 @@
-# Twitter data extraction - use Tweepy to extract the data about a group of hashtags
+# Twitter data extraction - using Tweepy
 
 import os
 import tweepy
@@ -11,11 +11,7 @@ auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth, wait_on_rate_limit=True)
 
 # Fetch the use of a particular keyword over time
-def fetch_timeseries_twitter(keyword):
-    # Csv name
-    data_path = 'data/twitter/'
-    if not os.path.exists(data_path): os.makedirs(data_path)
-    file_name = data_path + keyword.replace(' ', '') + '_twitter_interest.csv'
+def fetch_timeseries_twitter(keyword, save_csv = True):
     tweets = []
 
     # Append all tweet data to list
@@ -25,8 +21,15 @@ def fetch_timeseries_twitter(keyword):
     # Convert 'tweets' list to pandas.DataFrame
     tweets_df = pd.DataFrame(vars(tweets[i]) for i in range(len(tweets)))
 
-    # Use pandas to save dataframe to csv
-    tweets_df.to_csv(file_name, sep=';')
+    # Save in a csv if needed
+    if(save_csv): 
+        # Csv naming and path, converting to csv using Pandas
+        data_path = 'data/twitter/'
+        if not os.path.exists(data_path): os.makedirs(data_path)
+        file_name = data_path + keyword.replace(' ', '') + '_twitter_interest.csv'
+        tweets_df.to_csv(file_name, sep=';')
+    
+    return tweets_df
 
 # Get trending topics in Italy (US code = 2352824)
 def fetch_trending_twitter():   
@@ -40,6 +43,12 @@ def fetch_trending_twitter():
 
 # Fetch a sample of n tweets for every keyword in a given list
 def fetch_sample(keywords):
+    tweets = []
+    # Fill a list with the tweets
+    for keyword in keywords:
+        tweet_items = tweepy.Cursor(api.search, q=keyword, result_type='mixed').items(1000)
+        for tweet in tweet_items: tweets.append(tweet)
+    
     return keywords
 
 
