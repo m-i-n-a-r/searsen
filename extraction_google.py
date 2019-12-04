@@ -23,12 +23,11 @@ def fetch_timeseries_google(keywords, time_window, save_csv = True):
     
     return interest_over_time_df
 
-# Get the Google hot queries
+# Get the Google hot queries as an ordered list
 def fetch_trending_google():
-    # Login to Google. Only need to run this once, the rest of requests will use the same session.
+    # Login to Google
     pytrend = TrendReq()
 
-    # Get Google Hot Trends data
     #trends_us = pytrend.trending_searches(pn='united_states')
     trends_it_df = pytrend.trending_searches(pn='italy')
     trends_it_final = trends_it_df.iloc[:,0].tolist()

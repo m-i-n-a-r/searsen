@@ -15,9 +15,9 @@ The desired goal is to perform an analysis, comparing a dataset from Google Tren
 
 ## Project structure
 At the time of writing, the project consistis in 5 main files (3 for data extraction, 2 for data analysis):
-- extraction_twitter :arrow_forward: extracts data from Twitter. It can extract both time series, trending topics or tweets for a given keyword
-- extraction_google :arrow_forward: extracts data from Google. It can extract both time series or hot trends
-- extraction_wikipedia :arrow_forward: extracts data from Wikipedia. It can extract both time series or trending articles
-- searsen_timeseries :arrow_forward: analyzes and plot the timeseries on user input. Useful to compare the overall trends of a keyword
-- searsen_trends :arrow_forward: aggregates the current time, the trending topics and the hot trends in a single csv file or in a MongoDB table
+- **extraction_twitter** :arrow_forward: extracts data from Twitter. It can extract both time series, trending topics or tweets for a given keyword
+- **extraction_google** :arrow_forward: extracts data from Google. It can extract both time series or hot trends
+- **extraction_wikipedia** :arrow_forward: extracts data from Wikipedia. It can extract both time series or trending articles
+- **searsen_timeseries** :arrow_forward: analyzes and plot the timeseries on user input. Useful to compare the overall trends of a keyword
+- **searsen_trends** :arrow_forward: aggregates the current time, the trending topics and the hot trends in a single csv file or in a MongoDB table
 

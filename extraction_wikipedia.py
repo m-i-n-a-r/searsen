@@ -2,6 +2,7 @@
 
 import pageviewapi
 import os
+from attrdict import AttrDict
 import pandas as pd
 from pandas.io.json import json_normalize
 
@@ -25,10 +26,14 @@ def fetch_timeseries_wikipedia(keyword, save_csv = True):
 
     return interest_over_time
 
-# Get trending articles in Italy
+# Get trending articles in Italy as an ordered list
 def fetch_trending_wikipedia():
-    trends_it_final = pageviewapi.top('it.wikipedia', 2019, 11, 14, access='all-access')
-    print(trends_it_final)
+    # Returns an AttrDict
+    trends_it = pageviewapi.top('it.wikipedia', 2019, 11, 14, access='all-access')
+    trends_it_final = []
+    for article in trends_it['items'][0]['articles']:
+        trends_it_final.append(article['article'])
+    
     return trends_it_final
 
 

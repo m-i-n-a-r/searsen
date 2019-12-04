@@ -12,13 +12,16 @@ register_matplotlib_converters()
 def analyze_data():
     data_path_google = 'data/google/'
     data_path_twitter = 'data/twitter/'
+    data_path_wikipedia = 'data/wikipedia/'
     data_path = input('''
 Choose the data folder (default: 1)
 1 - Google
 2 - Twitter
+3 - Wikipedia
 -> ''')
     if(data_path == '1'): chosen_data_path = data_path_google
     elif(data_path == '2'): chosen_data_path = data_path_twitter
+    elif(data_path == '3'): chosen_data_path = data_path_wikipedia
     else: chosen_data_path = data_path_google
 
     files = os.listdir(chosen_data_path)
@@ -36,7 +39,7 @@ Choose the data folder (default: 1)
         value = 0 
     file_path = data_path_google + files[value]
 
-    # Plot the selected csv
+    # Plot the selected csv TODO only working for Google atm
     plot_path = 'plots/'
     if not os.path.exists(plot_path): os.mkdir(plot_path)
     plot_name = files[value][:-4] + '_plot.png'
@@ -56,7 +59,8 @@ Extract and compare searches and sentiment
 Do you want to extract data? (default: 3)
 1 - Extract from Google
 2 - Extract from Twitter
-3 - Skip extraction
+3 - Extract from Wikipedia
+4 - Skip extraction
 -> ''')
 if(extraction_pref == '1'): 
     subprocess.call('python extraction_google.py', shell=True)
@@ -65,6 +69,9 @@ elif(extraction_pref == '2'):
     subprocess.call('python extraction_twitter.py', shell=True)
     analyze_data()
 elif(extraction_pref == '3'): 
+    subprocess.call('python extraction_wikipedia.py', shell=True)
+    analyze_data()
+elif(extraction_pref == '4'): 
     analyze_data()
 else: 
     print('\nInvalid argument, using default')
