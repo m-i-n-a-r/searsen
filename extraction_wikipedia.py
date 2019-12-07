@@ -2,7 +2,7 @@
 
 import pageviewapi
 import os
-from attrdict import AttrDict
+import datetime
 import pandas as pd
 from pandas.io.json import json_normalize
 
@@ -26,13 +26,23 @@ def fetch_timeseries_wikipedia(keyword, save_csv = True):
 
     return interest_over_time
 
-# Get trending articles in Italy as an ordered list
-def fetch_trending_wikipedia():
+# Get trending articles in Italy as an ordered list, cut them if necessary (updated daily)
+def fetch_trending_wikipedia(cut = 0):
+    # Get the current date to select yesterday's trending articles (month and day must have the leading zero)
+    now = datetime.datetime.now() - datetime.timedelta(days=1)
+    year = now.year
+    month = f"{now.month:02d}"
+    day = f"{now.day:02d}"
     # Returns an AttrDict
-    trends_it = pageviewapi.top('it.wikipedia', 2019, 11, 14, access='all-access')
+    trends_it = pageviewapi.top('it.wikipedia', year, month, day, access='all-access')
     trends_it_final = []
+    counter = 0
     for article in trends_it['items'][0]['articles']:
         trends_it_final.append(article['article'])
+        counter += 1
+        if(counter == cut + 1): break
+    # The first element is always the main page
+    trends_it_final.pop(0)
     
     return trends_it_final
 

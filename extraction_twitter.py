@@ -31,7 +31,7 @@ def fetch_timeseries_twitter(keyword, save_csv = True):
     
     return tweets_df
 
-# Get trending topics in Italy as an ordered list (US code = 2352824)
+# Get trending topics in Italy as an ordered list (US code = 2352824, updated every 5 minutes)
 def fetch_trending_twitter():   
     trends_it = api.trends_place('711080')
     data = trends_it[0] 

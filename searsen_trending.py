@@ -23,16 +23,16 @@ def update_trending_csv(google_trending, twitter_trending, wikipedia_trending, m
     # Get the current time and create the file
     current_time = datetime.datetime.utcnow()
     trending_path = 'data/trending/'
-    trending_file = trending_path + 'trending_google_twitter.csv'
+    trending_file = trending_path + 'trending_google_twitter_wikipedia.csv'
     if not os.path.exists(trending_path): os.makedirs(trending_path)
 
     # Write the trending topics in a csv file
     f = Path(trending_file)
     if(not f.is_file()): 
-        with open(trending_file, 'a', newline='') as f:
+        with open(trending_file, 'a', newline='', encoding='utf-8') as f:
             wr = csv.writer(f, delimiter=';')
             wr.writerow(['timpestamp', 'topics_google', 'topics_twitter', 'topics_wikipedia', 'matching_trends'])
-    with open(trending_file, 'a', newline='') as f:
+    with open(trending_file, 'a', newline='', encoding='utf-8') as f:
         wr = csv.writer(f, delimiter=';')
         wr.writerow([current_time, google_trending, twitter_trending, wikipedia_trending, matching_trends])
 
@@ -79,7 +79,7 @@ Extract and compare searches and sentiment
 # Fetch an ordered list of trends for Google, Twitter and Wikipedia and the matching trends list to collect a sample of tweets
 google_trending = fetch_trending_google()
 twitter_trending = fetch_trending_twitter()
-wikipedia_trending = fetch_trending_wikipedia()
+wikipedia_trending = fetch_trending_wikipedia(50)
 matching_trends = compare_trends(google_trending, twitter_trending)
 matching_trends_all = compare_trends_all(google_trending, twitter_trending, wikipedia_trending)
 tweet_sample = fetch_sample(matching_trends)

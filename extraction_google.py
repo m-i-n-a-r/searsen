@@ -23,7 +23,7 @@ def fetch_timeseries_google(keywords, time_window, save_csv = True):
     
     return interest_over_time_df
 
-# Get the Google hot queries as an ordered list
+# Get the Google hot queries as an ordered list (updated every hour)
 def fetch_trending_google():
     # Login to Google
     pytrend = TrendReq()
