@@ -42,7 +42,7 @@ def fetch_trending_twitter():
     return trends_it_final
 
 # Fetch a sample of n tweets for every keyword in a given list
-def fetch_sample(keywords):
+def fetch_sample(keywords, amount):
     tweets = []
     # Fill a list with the tweets
     for keyword in keywords:

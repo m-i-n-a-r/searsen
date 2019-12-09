@@ -3,6 +3,7 @@
 import os
 import sys
 import csv
+import pickle
 from random import randint
 import datetime
 from pprint import pprint
@@ -50,7 +51,6 @@ def update_trending_mongo(google_trending, twitter_trending, wikipedia_trending,
         'tweet_sample': tweet_sample
     }
     db.trends.insert_one(trend)
-    print('Finished\n')
 
 # Compare two lists of trends (Twitter and Google) and return a list of keywords
 def compare_trends(google_trending, twitter_trending):
@@ -70,11 +70,24 @@ def compare_trends_all(google_trending, twitter_trending, wikipedia_trending):
 
     return matching_trends_all
 
+
 # Main part of searsen trending, it executes automatically
 print('''
 *************** SEARSEN ***************
 Extract and compare searches and sentiment
 ''')
+
+# Some parameters and operations to manage the tweet sample extraction (the script should be executed every 5 or 10 minutes)
+tweet_settings = 'tweet_sample_params'
+default_tweet_sample_skip = 2
+tweet_sample_amount = 300
+# Use Pickle to store and load the tweet_sample_skip variable
+try:
+    with open(tweet_settings, 'rb') as f:
+        tweet_sample_skip = pickle.load(f)
+except: 
+    tweet_sample_skip = default_tweet_sample_skip   
+
 
 # Fetch an ordered list of trends for Google, Twitter and Wikipedia and the matching trends list to collect a sample of tweets
 google_trending = fetch_trending_google()
@@ -82,8 +95,18 @@ twitter_trending = fetch_trending_twitter()
 wikipedia_trending = fetch_trending_wikipedia(50)
 matching_trends = compare_trends(google_trending, twitter_trending)
 matching_trends_all = compare_trends_all(google_trending, twitter_trending, wikipedia_trending)
-tweet_sample = fetch_sample(matching_trends)
+# Check if the tweet sample should be skipped in the current execution
+if(tweet_sample_skip == 0): 
+    tweet_sample = fetch_sample(matching_trends, tweet_sample_amount)
+    with open(tweet_settings, 'wb') as f:
+        pickle.dump(default_tweet_sample_skip, f)
+else: 
+    tweet_sample = "Skipped"
+    with open(tweet_settings, 'wb') as f:
+        pickle.dump(tweet_sample_skip-1, f)
 
 # Insert the data in a csv file and in MongoDB
 update_trending_csv(google_trending, twitter_trending, wikipedia_trending, matching_trends)
 update_trending_mongo(google_trending, twitter_trending, wikipedia_trending, tweet_sample)
+
+print('Finished\n')
