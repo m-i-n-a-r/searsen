@@ -45,9 +45,9 @@ def fetch_trending_twitter():
 def fetch_sample(keywords, amount):
     tweets = []
     # Fill a list with the tweets
-    for keyword in keywords:
-        tweet_items = tweepy.Cursor(api.search, q=keyword, result_type='mixed').items(1000)
-        for tweet in tweet_items: tweets.append(tweet)
+    #for keyword in keywords:
+    #    tweet_items = tweepy.Cursor(api.search, q=keyword, result_type='mixed').items(1000)
+    #    for tweet in tweet_items: tweets.append(tweet)
     
     return keywords
 

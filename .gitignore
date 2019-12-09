@@ -115,3 +115,6 @@ plots/*
 
 # Amazon AWS Keys
 *.pem
+
+# Pickle stuff
+tweet_sample_params

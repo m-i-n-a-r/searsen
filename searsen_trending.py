@@ -4,6 +4,7 @@ import os
 import sys
 import csv
 import pickle
+import difflib
 from random import randint
 import datetime
 from pprint import pprint
@@ -53,7 +54,7 @@ def update_trending_mongo(google_trending, twitter_trending, wikipedia_trending,
     db.trends.insert_one(trend)
 
 # Compare two lists of trends (Twitter and Google) and return a list of keywords
-def compare_trends(google_trending, twitter_trending):
+def compare_trends_simple(google_trending, twitter_trending):
     # Pre-elaboration and intersection
     processed_google = [trend.lower().replace(' ', '') for trend in google_trending]
     processed_twitter = [trend.lower().replace(' ', '') for trend in twitter_trending]
@@ -62,12 +63,37 @@ def compare_trends(google_trending, twitter_trending):
     return matching_trends
 
 # Compare three lists of trends (Twitter, Google and Wikipedia) and return a list of keywords
-def compare_trends_all(google_trending, twitter_trending, wikipedia_trending):
+def compare_trends_simple_all(google_trending, twitter_trending, wikipedia_trending):
     processed_google = [trend.lower().replace(' ', '') for trend in google_trending]
     processed_twitter = [trend.lower().replace(' ', '') for trend in twitter_trending]
     processed_wikipedia = [trend.lower().replace('_', '') for trend in wikipedia_trending]
     matching_trends_all = list(set(processed_google) & set(processed_twitter) & set(processed_wikipedia))
 
+    return matching_trends_all
+
+# Compare two lists of trends (Twitter, Google and Wikipedia) and return a list of keywords using advanced techniques
+def compare_trends_advanced(google_trending, twitter_trending):
+    processed_google = [trend.lower().replace(' ', '').replace('-', '') for trend in google_trending]
+    processed_twitter = [trend.lower().replace(' ', '').replace('-', '') for trend in twitter_trending]
+    
+    matching_trends = list({x for x in processed_google for y in processed_twitter if x in y or y in x})
+    #threshold = 0.8
+    #matching_trends = list({x for x in processed_google for y in processed_twitter if difflib.SequenceMatcher(None, x, y).ratio() > threshold})
+    
+    return matching_trends
+
+# Compare three lists of trends (Twitter and Google) and return a list of keywords using advanced techniques
+def compare_trends_advanced_all(google_trending, twitter_trending, wikipedia_trending):
+    
+    processed_google = [trend.lower().replace(' ', '').replace('-', '') for trend in google_trending]
+    processed_twitter = [trend.lower().replace(' ', '').replace('-', '') for trend in twitter_trending]
+    processed_wikipedia = [trend.lower().replace('_', '').replace('-', '') for trend in wikipedia_trending]
+    
+    matching_trends_first = list({x for x in processed_google for y in processed_twitter if x in y or y in x})
+    matching_trends_all = list({x for x in matching_trends_first for y in processed_wikipedia if x in y or y in x})
+    #threshold = 0.8
+    #matching_trends = list({x for x in processed_google for y in processed_twitter if difflib.SequenceMatcher(None, x, y).ratio() > threshold})
+    
     return matching_trends_all
 
 
@@ -93,11 +119,11 @@ except:
 google_trending = fetch_trending_google()
 twitter_trending = fetch_trending_twitter()
 wikipedia_trending = fetch_trending_wikipedia(50)
-matching_trends = compare_trends(google_trending, twitter_trending)
-matching_trends_all = compare_trends_all(google_trending, twitter_trending, wikipedia_trending)
+matching_trends_advanced = compare_trends_advanced(google_trending, twitter_trending)
+
 # Check if the tweet sample should be skipped in the current execution
 if(tweet_sample_skip == 0): 
-    tweet_sample = fetch_sample(matching_trends, tweet_sample_amount)
+    tweet_sample = fetch_sample(matching_trends_advanced, tweet_sample_amount)
     with open(tweet_settings, 'wb') as f:
         pickle.dump(default_tweet_sample_skip, f)
 else: 
@@ -106,7 +132,7 @@ else:
         pickle.dump(tweet_sample_skip-1, f)
 
 # Insert the data in a csv file and in MongoDB
-update_trending_csv(google_trending, twitter_trending, wikipedia_trending, matching_trends)
+#update_trending_csv(google_trending, twitter_trending, wikipedia_trending, matching_trends_advanced)
 update_trending_mongo(google_trending, twitter_trending, wikipedia_trending, tweet_sample)
 
 print('Finished\n')
