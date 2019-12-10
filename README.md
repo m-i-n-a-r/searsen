@@ -1,8 +1,8 @@
 # Searsen - search vs sentiment
-### An attempt to use Google Trends and Twitter to find the relation between searches and opinions
+### An attempt to use Google Trends, Twitter and Wikipedia to find the relation between interest, search and opinion
 
 <p align=center>
-	<img src='https://img.shields.io/badge/version-0.2-blue'/>
+	<img src='https://img.shields.io/badge/version-0.3-blue'/>
 	<img src='https://img.shields.io/badge/status-wip-orange'/>
 	<img src='https://img.shields.io/badge/python-3.6+-success'/>
 	<img src='https://img.shields.io/badge/-master%20thesis-yellow'/>
@@ -18,6 +18,6 @@ At the time of writing, the project consistis in 5 main files (3 for data extrac
 - **extraction_twitter** :arrow_forward: extracts data from Twitter. It can extract both time series, trending topics or tweets for a given keyword
 - **extraction_google** :arrow_forward: extracts data from Google. It can extract both time series or hot trends
 - **extraction_wikipedia** :arrow_forward: extracts data from Wikipedia. It can extract both time series or trending articles
-- **searsen_timeseries** :arrow_forward: analyzes and plot the timeseries on user input. Useful to compare the overall trends of a keyword
-- **searsen_trends** :arrow_forward: aggregates the current time, the trending topics and the hot trends in a single csv file or in a MongoDB table
+- **searsen_timeseries** :arrow_forward: analyzes and plot the timeseries on user input. Useful to compare the overall trends of a keyword [WIP]
+- **searsen_trends** :arrow_forward: aggregates the current time, the Twitter trending topics, the Google hot trends and the Wikipedia top articles in a single csv file or in a MongoDB table, getting a list of tweets for each topic contained both in hot trends and trending topics
 

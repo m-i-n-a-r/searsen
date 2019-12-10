@@ -105,6 +105,7 @@ Extract and compare searches and sentiment
 
 # Some parameters and operations to manage the tweet sample extraction (the script should be executed every 5 or 10 minutes)
 tweet_settings = 'tweet_sample_params'
+wikipedia_trends_amount = 50
 default_tweet_sample_skip = 5
 tweet_sample_amount = 500
 # Use Pickle to store and load the tweet_sample_skip variable
@@ -118,7 +119,7 @@ except:
 # Fetch an ordered list of trends for Google, Twitter and Wikipedia and the matching trends list to collect a sample of tweets
 google_trending = fetch_trending_google()
 twitter_trending = fetch_trending_twitter()
-wikipedia_trending = fetch_trending_wikipedia(50)
+wikipedia_trending = fetch_trending_wikipedia(wikipedia_trends_amount)
 matching_trends_advanced = compare_trends_advanced(google_trending, twitter_trending)
 
 # Check if the tweet sample should be skipped in the current execution
