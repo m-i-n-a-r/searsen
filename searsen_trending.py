@@ -106,7 +106,7 @@ Extract and compare searches and sentiment
 # Some parameters and operations to manage the tweet sample extraction (the script should be executed every 5 or 10 minutes)
 tweet_settings = 'tweet_sample_params'
 default_tweet_sample_skip = 2
-tweet_sample_amount = 300
+tweet_sample_amount = 250
 # Use Pickle to store and load the tweet_sample_skip variable
 try:
     with open(tweet_settings, 'rb') as f:
@@ -135,4 +135,4 @@ else:
 #update_trending_csv(google_trending, twitter_trending, wikipedia_trending, matching_trends_advanced)
 update_trending_mongo(google_trending, twitter_trending, wikipedia_trending, tweet_sample)
 
-print('Finished\n')
+print('*****Done*****\n')

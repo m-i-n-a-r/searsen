@@ -2,10 +2,10 @@
 ### An attempt to use Google Trends and Twitter to find the relation between searches and opinions
 
 <p align=center>
-	<img src='https://img.shields.io/badge/version-0.2-blue' />
-	<img src='https://img.shields.io/badge/status-wip-orange' />
-	<img src='https://img.shields.io/badge/python-3.6+-success' />
-	<img src='https://img.shields.io/badge/-master%20thesis-yellow'>
+	<img src='https://img.shields.io/badge/version-0.2-blue'/>
+	<img src='https://img.shields.io/badge/status-wip-orange'/>
+	<img src='https://img.shields.io/badge/python-3.6+-success'/>
+	<img src='https://img.shields.io/badge/-master%20thesis-yellow'/>
 </p>
 
 ## Introduction and desired goal
