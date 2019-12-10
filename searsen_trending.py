@@ -71,18 +71,18 @@ def compare_trends_simple_all(google_trending, twitter_trending, wikipedia_trend
 
     return matching_trends_all
 
-# Compare two lists of trends (Twitter, Google and Wikipedia) and return a list of keywords using advanced techniques
+# Compare two lists of trends (Twitter and Google) and return a list of keywords using advanced techniques
 def compare_trends_advanced(google_trending, twitter_trending):
     processed_google = [trend.lower().replace(' ', '').replace('-', '') for trend in google_trending]
     processed_twitter = [trend.lower().replace(' ', '').replace('-', '') for trend in twitter_trending]
     
-    matching_trends = list({x for x in processed_google for y in processed_twitter if x in y or y in x})
+    matching_trends = list({twitter_trending[processed_twitter.index(y)] for x in processed_google for y in processed_twitter if x in y or y in x})
     #threshold = 0.8
     #matching_trends = list({x for x in processed_google for y in processed_twitter if difflib.SequenceMatcher(None, x, y).ratio() > threshold})
     
     return matching_trends
 
-# Compare three lists of trends (Twitter and Google) and return a list of keywords using advanced techniques
+# Compare three lists of trends (Twitter, Google and Wikipedia) and return a list of keywords using advanced techniques
 def compare_trends_advanced_all(google_trending, twitter_trending, wikipedia_trending):
     
     processed_google = [trend.lower().replace(' ', '').replace('-', '') for trend in google_trending]
@@ -105,8 +105,8 @@ Extract and compare searches and sentiment
 
 # Some parameters and operations to manage the tweet sample extraction (the script should be executed every 5 or 10 minutes)
 tweet_settings = 'tweet_sample_params'
-default_tweet_sample_skip = 2
-tweet_sample_amount = 250
+default_tweet_sample_skip = 5
+tweet_sample_amount = 500
 # Use Pickle to store and load the tweet_sample_skip variable
 try:
     with open(tweet_settings, 'rb') as f:
