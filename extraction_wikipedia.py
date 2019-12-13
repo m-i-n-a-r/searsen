@@ -38,11 +38,11 @@ def fetch_trending_wikipedia(cut = 0):
     trends_it_final = []
     counter = 0
     for article in trends_it['items'][0]['articles']:
-        trends_it_final.append(article['article'])
-        counter += 1
-        if(counter == cut + 1): break
-    # The first element is always the main page
-    trends_it_final.pop(0)
+        if(article['article'] in ('Speciale:Ricerca', 'Pagina_principale', 'Speciale:UltimeModifiche')): continue
+        else: 
+            trends_it_final.append(article['article'])
+            counter += 1
+            if(counter == cut + 1): break
     
     return trends_it_final
 
