@@ -11,6 +11,7 @@ from pprint import pprint
 from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
+from sentistrength import PySentiStr
 from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
 from pymongo import MongoClient
@@ -96,6 +97,16 @@ def compare_trends_advanced_all(google_trending, twitter_trending, wikipedia_tre
     
     return matching_trends_all
 
+# Perform a sentiment analysis on a corpus of tweets, using sentistrength
+def sentiment_analysis(tweet_sample):
+    senti = PySentiStr()
+    sentiment_dict = []
+    for topic in tweet_sample.keys():
+        sentiment = senti.getSentiment(tweet_sample[topic], score='binary')
+        print(sentiment) # TODO remove
+        sentiment_dict[topic] = sentiment
+    return sentiment_dict
+    
 
 # Main part of searsen trending, it executes automatically
 print('''
@@ -103,10 +114,10 @@ print('''
 Extract and compare searches and sentiment
 ''')
 
-# Some parameters and operations to manage the tweet sample extraction (the script should be executed every 5 or 10 minutes)
+# Some parameters and operations to manage the tweet sample extraction (the script should be executed every 20 or 30 minutes)
 tweet_settings = 'tweet_sample_params'
 wikipedia_trends_amount = 50
-default_tweet_sample_skip = 5
+default_tweet_sample_skip = 0
 tweet_sample_amount = 500
 # Use Pickle to store and load the tweet_sample_skip variable
 try:
@@ -125,6 +136,8 @@ matching_trends_advanced = compare_trends_advanced(google_trending, twitter_tren
 # Check if the tweet sample should be skipped in the current execution
 if(tweet_sample_skip == 0): 
     tweet_sample = fetch_sample(matching_trends_advanced, tweet_sample_amount)
+    # Live sentiment analysis
+    #sentiment = sentiment_analysis(tweet_sample)
     with open(tweet_settings, 'wb') as f:
         pickle.dump(default_tweet_sample_skip, f)
 else: 
@@ -136,4 +149,4 @@ else:
 #update_trending_csv(google_trending, twitter_trending, wikipedia_trending, matching_trends_advanced)
 update_trending_mongo(google_trending, twitter_trending, wikipedia_trending, tweet_sample)
 
-print('*****Done*****\n')
+print('******** Done ********\n')
