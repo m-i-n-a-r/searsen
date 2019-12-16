@@ -21,3 +21,12 @@ At the time of writing, the project consistis in 5 main files (3 for data extrac
 - **searsen_timeseries** :arrow_forward: analyzes and plot the timeseries on user input. Useful to compare the overall trends of a keyword [WIP]
 - **searsen_trends** :arrow_forward: aggregates the current time, the Twitter trending topics, the Google hot trends and the Wikipedia top articles in a single csv file or in a MongoDB table, getting a list of tweets for each topic contained both in hot trends and trending topics
 
+## Libraries and external requirements
+This software uses some third party software to work properly. Some examples are
+- **Pytrends**
+- **Tweepy**
+- **Pageview API**
+- **Sentistrength** (Python API + java version and language packs)
+- **Pandas**
+- **Pickle**
+- **Pymongo**
