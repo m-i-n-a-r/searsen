@@ -100,6 +100,8 @@ def compare_trends_advanced_all(google_trending, twitter_trending, wikipedia_tre
 # Perform a sentiment analysis on a corpus of tweets, using sentistrength
 def sentiment_analysis(tweet_sample):
     senti = PySentiStr()
+    senti.setSentiStrengthPath('/sentistrength/SentiStrengthCom.jar')
+    senti.setSentiStrengthLanguageFolderPath('/sentistrength/italian/')
     sentiment_dict = []
     for topic in tweet_sample.keys():
         sentiment = senti.getSentiment(tweet_sample[topic], score='binary')
@@ -141,11 +143,11 @@ if(tweet_sample_skip == 0):
     with open(tweet_settings, 'wb') as f:
         pickle.dump(default_tweet_sample_skip, f)
 else: 
-    tweet_sample = "Skipped"
+    tweet_sample = 'Skipped'
     with open(tweet_settings, 'wb') as f:
         pickle.dump(tweet_sample_skip-1, f)
 
-# Insert the data in a csv file and in MongoDB
+# Insert the data in a csv file or in MongoDB
 #update_trending_csv(google_trending, twitter_trending, wikipedia_trending, matching_trends_advanced)
 update_trending_mongo(google_trending, twitter_trending, wikipedia_trending, tweet_sample)
 

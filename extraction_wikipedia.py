@@ -32,19 +32,22 @@ def fetch_trending_wikipedia(cut = 0):
     special_pages = ['Speciale:Ricerca', 'Pagina_principale', 'Speciale:UltimeModifiche', 'Special:Search']
     now = datetime.datetime.now() - datetime.timedelta(days=1)
     year = now.year
-    month = f"{now.month:02d}"
-    day = f"{now.day:02d}"
-    # Returns an AttrDict
-    trends_it = pageviewapi.top('it.wikipedia', year, month, day, access='all-access')
+    month = f'{now.month:02d}'
+    day = f'{now.day:02d}'
     trends_it_final = []
-    counter = 0
-    for article in trends_it['items'][0]['articles']:
-        if(article['article'] in special_pages): continue
-        else: 
-            trends_it_final.append(article['article'])
-            counter += 1
-            if(counter == cut + 1): break
-    
+    # Returns an AttrDict
+    try:
+        trends_it = pageviewapi.top('it.wikipedia', year, month, day, access='all-access')
+        counter = 0
+        for article in trends_it['items'][0]['articles']:
+            if(article['article'] in special_pages): continue
+            else: 
+                trends_it_final.append(article['article'])
+                counter += 1
+                if(counter == cut + 1): break
+    # The data may not be ready around midnight
+    except:
+        return 'Data not ready'
     return trends_it_final
 
 

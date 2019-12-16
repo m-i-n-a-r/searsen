@@ -118,3 +118,6 @@ plots/*
 
 # Pickle stuff
 tweet_sample_params
+
+# Sentistrength jar
+sentistrength/*

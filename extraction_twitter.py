@@ -43,18 +43,20 @@ def fetch_trending_twitter():
 
 # Fetch a sample of n tweets for each keyword in a given list
 def fetch_sample(keywords, amount, no_replies = False):
-    if(not keywords): return "No matching topics"
+    if(not keywords): return 'No matching topics'
     sample_dict = {}
     # Fill the dict with the keyword as the key and the tweets as the value
-    for keyword in keywords:
-        tweets = []
-        if(no_replies): query = keyword + ' -filter:retweets -filter:replies'
-        else: query = keyword + ' -filter:retweets'
-        # Take the full text of each tweet and manage the 100 tweets for request problem (retweets don't have the full text)
-        tweet_items = tweepy.Cursor(api.search, q=query, result_type='recent', lang = 'it', tweet_mode='extended').items(amount)
-        for tweet in tweet_items: tweets.append(tweet._json['full_text'])
-        sample_dict[keyword] = tweets
-    
+    try:
+        for keyword in keywords:
+            tweets = []
+            if(no_replies): query = keyword + ' -filter:retweets -filter:replies'
+            else: query = keyword + ' -filter:retweets'
+            # Take the full text of each tweet and manage the 100 tweets for request problem (retweets don't have the full text)
+            tweet_items = tweepy.Cursor(api.search, q=query, result_type='recent', lang = 'it', tweet_mode='extended').items(amount)
+            for tweet in tweet_items: tweets.append(tweet._json['full_text'])
+            sample_dict[keyword] = tweets
+    except:
+        return 'Error occurred'
     return sample_dict
 
 
