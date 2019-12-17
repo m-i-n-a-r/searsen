@@ -4,21 +4,18 @@ import os
 import sys
 import csv
 import pickle
-import difflib
 from random import randint
 import datetime
 from pprint import pprint
 from pathlib import Path
 import pandas as pd
-import matplotlib.pyplot as plt
 from sentistrength import PySentiStr
-from pandas.plotting import register_matplotlib_converters
-register_matplotlib_converters()
 from pymongo import MongoClient
 from extraction_google import fetch_trending_google
 from extraction_twitter import fetch_trending_twitter
 from extraction_twitter import fetch_sample
 from extraction_wikipedia import fetch_trending_wikipedia
+from keyword_matcher import advanced_matching
 from searsen_credentials import mongo_username, mongo_password
 
 # Add the current time and two lists of trends in a csv file
@@ -54,60 +51,19 @@ def update_trending_mongo(google_trending, twitter_trending, wikipedia_trending,
     }
     db.trends.insert_one(trend)
 
-# Compare two lists of trends (Twitter and Google) and return a list of keywords
-def compare_trends_simple(google_trending, twitter_trending):
-    # Pre-elaboration and intersection
-    processed_google = [trend.lower().replace(' ', '') for trend in google_trending]
-    processed_twitter = [trend.lower().replace(' ', '') for trend in twitter_trending]
-    matching_trends = list(set(processed_google) & set(processed_twitter))
-
-    return matching_trends
-
-# Compare three lists of trends (Twitter, Google and Wikipedia) and return a list of keywords
-def compare_trends_simple_all(google_trending, twitter_trending, wikipedia_trending):
-    processed_google = [trend.lower().replace(' ', '') for trend in google_trending]
-    processed_twitter = [trend.lower().replace(' ', '') for trend in twitter_trending]
-    processed_wikipedia = [trend.lower().replace('_', '') for trend in wikipedia_trending]
-    matching_trends_all = list(set(processed_google) & set(processed_twitter) & set(processed_wikipedia))
-
-    return matching_trends_all
-
-# Compare two lists of trends (Twitter and Google) and return a list of keywords using advanced techniques
-def compare_trends_advanced(google_trending, twitter_trending):
-    processed_google = [trend.lower().replace(' ', '').replace('-', '') for trend in google_trending]
-    processed_twitter = [trend.lower().replace(' ', '').replace('-', '') for trend in twitter_trending]
-    
-    matching_trends = list({twitter_trending[processed_twitter.index(y)] for x in processed_google for y in processed_twitter if x in y or y in x})
-    #threshold = 0.8
-    #matching_trends = list({x for x in processed_google for y in processed_twitter if difflib.SequenceMatcher(None, x, y).ratio() > threshold})
-    
-    return matching_trends
-
-# Compare three lists of trends (Twitter, Google and Wikipedia) and return a list of keywords using advanced techniques
-def compare_trends_advanced_all(google_trending, twitter_trending, wikipedia_trending):
-    
-    processed_google = [trend.lower().replace(' ', '').replace('-', '') for trend in google_trending]
-    processed_twitter = [trend.lower().replace(' ', '').replace('-', '') for trend in twitter_trending]
-    processed_wikipedia = [trend.lower().replace('_', '').replace('-', '') for trend in wikipedia_trending]
-    
-    matching_trends_first = list({x for x in processed_google for y in processed_twitter if x in y or y in x})
-    matching_trends_all = list({x for x in matching_trends_first for y in processed_wikipedia if x in y or y in x})
-    #threshold = 0.8
-    #matching_trends = list({x for x in processed_google for y in processed_twitter if difflib.SequenceMatcher(None, x, y).ratio() > threshold})
-    
-    return matching_trends_all
-
 # Perform a sentiment analysis on a corpus of tweets, using sentistrength
 def sentiment_analysis(tweet_sample):
     senti = PySentiStr()
     senti.setSentiStrengthPath('/sentistrength/SentiStrengthCom.jar')
     senti.setSentiStrengthLanguageFolderPath('/sentistrength/italian/')
     sentiment_dict = []
-    for topic in tweet_sample.keys():
-        sentiment = senti.getSentiment(tweet_sample[topic], score='binary')
-        print(sentiment) # TODO remove
-        sentiment_dict[topic] = sentiment
-    return sentiment_dict
+    if type(tweet_sample) is not dict: return 'Error'
+    else:
+        for topic in tweet_sample.keys():
+            sentiment = senti.getSentiment(tweet_sample[topic], score='binary')
+            print(sentiment) # TODO remove
+            sentiment_dict[topic] = sentiment
+        return sentiment_dict
     
 
 # Main part of searsen trending, it executes automatically
@@ -133,7 +89,7 @@ except:
 google_trending = fetch_trending_google()
 twitter_trending = fetch_trending_twitter()
 wikipedia_trending = fetch_trending_wikipedia(wikipedia_trends_amount)
-matching_trends_advanced = compare_trends_advanced(google_trending, twitter_trending)
+matching_trends_advanced = advanced_matching(google_trending, twitter_trending)
 
 # Check if the tweet sample should be skipped in the current execution
 if(tweet_sample_skip == 0): 

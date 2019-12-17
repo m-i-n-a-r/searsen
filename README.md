@@ -1,4 +1,4 @@
-# Searsen - search vs sentiment
+# Searsen - SEarch, ARticle, SENtiment
 ### An attempt to use Google Trends, Twitter and Wikipedia to find the relation between interest, search and opinion
 
 <p align=center>
@@ -18,15 +18,16 @@ At the time of writing, the project consistis in 5 main files (3 for data extrac
 - **extraction_twitter** :arrow_forward: extracts data from Twitter. It can extract both time series, trending topics or tweets for a given keyword
 - **extraction_google** :arrow_forward: extracts data from Google. It can extract both time series or hot trends
 - **extraction_wikipedia** :arrow_forward: extracts data from Wikipedia. It can extract both time series or trending articles
+- **keyword_matcher** :arrow_forward: contains a number of matching criteria, to detect the eventual relation between two different keywords or to match similar or identical keywords
 - **searsen_timeseries** :arrow_forward: analyzes and plot the timeseries on user input. Useful to compare the overall trends of a keyword [WIP]
 - **searsen_trends** :arrow_forward: aggregates the current time, the Twitter trending topics, the Google hot trends and the Wikipedia top articles in a single csv file or in a MongoDB table, getting a list of tweets for each topic contained both in hot trends and trending topics
 
 ## Libraries and external requirements
-This software uses some third party software to work properly. Some examples are
+Searsen uses some third party software to work properly. Some examples are:
 - **Pytrends**
-- **Tweepy**
+- **Tweepy** (including the credentials of a Twitter application)
 - **Pageview API**
 - **Sentistrength** (Python API + java version and language packs)
 - **Pandas**
 - **Pickle**
-- **Pymongo**
+- **Pymongo** (MongoDB Atlas)
