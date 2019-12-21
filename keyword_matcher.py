@@ -14,7 +14,7 @@ def intersection_matching(google_trending, twitter_trending, wikipedia_trending 
 
     return matching_trends_all
 
-# Compare two or three lists of trends accepting also partial matchings
+# Compare two or three lists of trends also accepting partial matchings
 def advanced_matching(google_trending, twitter_trending, wikipedia_trending = None):
     processed_google = [trend.lower().replace(' ', '').replace('-', '') for trend in google_trending]
     processed_twitter = [trend.lower().replace(' ', '').replace('-', '') for trend in twitter_trending]
@@ -51,4 +51,12 @@ def hybrid_matching(google_trending, twitter_trending, wikipedia_trending = None
         return
     else:
         return
-    return
+
+
+# Avoid to run the script when imported
+if __name__ == '__main__':
+    # Test TODO remove
+    test_list1 = []
+    test_list2 = []
+    #result = semantic_matching(test_list1, test_list2)
+    #print(result)

@@ -32,13 +32,16 @@ def fetch_timeseries_twitter(keyword, save_csv = True):
     return tweets_df
 
 # Get trending topics in Italy as an ordered list (US code = 2352824, updated every 5 minutes)
-def fetch_trending_twitter():   
-    trends_it = api.trends_place('711080')
-    data = trends_it[0] 
-    # Take the name of the trends
-    trends_name = data['trends']
-    trends_it_final = [trend['name'].replace('#', '') for trend in trends_name]
-    
+def fetch_trending_twitter():
+    try:
+        trends_it = api.trends_place('711080')
+        data = trends_it[0] 
+        # Take the name of the trends
+        trends_name = data['trends']
+        trends_it_final = [trend['name'].replace('#', '') for trend in trends_name]
+    except:
+        return 'Error'
+        
     return trends_it_final
 
 # Fetch a sample of n tweets for each keyword in a given list

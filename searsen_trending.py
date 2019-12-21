@@ -55,13 +55,13 @@ def update_trending_mongo(google_trending, twitter_trending, wikipedia_trending,
 def sentiment_analysis(tweet_sample):
     senti = PySentiStr()
     senti.setSentiStrengthPath('/sentistrength/SentiStrengthCom.jar')
-    senti.setSentiStrengthLanguageFolderPath('/sentistrength/italian/')
+    senti.setSentiStrengthLanguageFolderPath('/sentistrength/IT/')
     sentiment_dict = []
+
     if type(tweet_sample) is not dict: return 'Error'
     else:
         for topic in tweet_sample.keys():
             sentiment = senti.getSentiment(tweet_sample[topic], score='binary')
-            print(sentiment) # TODO remove
             sentiment_dict[topic] = sentiment
         return sentiment_dict
     
@@ -95,7 +95,7 @@ matching_trends_advanced = advanced_matching(google_trending, twitter_trending)
 if(tweet_sample_skip == 0): 
     tweet_sample = fetch_sample(matching_trends_advanced, tweet_sample_amount)
     # Live sentiment analysis
-    #sentiment = sentiment_analysis(tweet_sample)
+    sentiment = sentiment_analysis(tweet_sample)
     with open(tweet_settings, 'wb') as f:
         pickle.dump(default_tweet_sample_skip, f)
 else: 
