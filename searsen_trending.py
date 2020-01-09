@@ -16,10 +16,10 @@ from extraction_twitter import fetch_trending_twitter
 from extraction_twitter import fetch_sample
 from extraction_wikipedia import fetch_trending_wikipedia
 from keyword_matcher import advanced_matching
-from searsen_credentials import mongo_username, mongo_password
+from searsen_credentials import mongo_username, mongo_password, sentistrength_jar_full_path, sentistrength_lan_full_path_it
 
 # Add the current time and two lists of trends in a csv file
-def update_trending_csv(google_trending, twitter_trending, wikipedia_trending, matching_trends):
+def update_trending_csv(google_trending, twitter_trending, wikipedia_trending, matching_trends, sentiment):
     # Get the current time and create the file
     current_time = datetime.datetime.utcnow()
     trending_path = 'data/trending/'
@@ -37,7 +37,7 @@ def update_trending_csv(google_trending, twitter_trending, wikipedia_trending, m
         wr.writerow([current_time, google_trending, twitter_trending, wikipedia_trending, matching_trends])
 
 # Add the current time and two lists of trends, plus a sample of tweets, in a mongodb table
-def update_trending_mongo(google_trending, twitter_trending, wikipedia_trending, tweet_sample):
+def update_trending_mongo(google_trending, twitter_trending, wikipedia_trending, tweet_sample, sentiment):
     # Connect to MongoDB
     client = MongoClient('mongodb+srv://' + mongo_username + ':' + mongo_password + '@searsen-fyfvz.mongodb.net/test?retryWrites=true&w=majority')
     db = client.searsen
@@ -47,21 +47,33 @@ def update_trending_mongo(google_trending, twitter_trending, wikipedia_trending,
         'google': google_trending,
         'twitter': twitter_trending,
         'wikipedia': wikipedia_trending,
-        'tweet_sample': tweet_sample
+        #'tweet_sample': tweet_sample
+        'sentiment': sentiment
     }
     db.trends.insert_one(trend)
 
 # Perform a sentiment analysis on a corpus of tweets, using sentistrength
-def sentiment_analysis(tweet_sample):
+def sentiment_analysis(tweet_sample, aggregate = True):
     senti = PySentiStr()
-    senti.setSentiStrengthPath('/sentistrength/SentiStrengthCom.jar')
-    senti.setSentiStrengthLanguageFolderPath('/sentistrength/IT/')
-    sentiment_dict = []
+    senti.setSentiStrengthPath(sentistrength_jar_full_path)
+    senti.setSentiStrengthLanguageFolderPath(sentistrength_lan_full_path_it)
+    
+    sentiment_dict = {}
 
     if type(tweet_sample) is not dict: return 'Error'
     else:
         for topic in tweet_sample.keys():
-            sentiment = senti.getSentiment(tweet_sample[topic], score='binary')
+            # Scores: scale, dual, binary and trinary
+            sentiment = senti.getSentiment(tweet_sample[topic], score='scale')
+            if (aggregate == True):
+                sentisum = 0
+                summary = {}
+                for sent in sentiment: sentisum += sent
+                summary['value'] = sentisum 
+                if sentisum > 0: summary['sentiment'] = 'positive'
+                else: summary['sentiment'] = 'negative'
+                sentiment = summary
+                
             sentiment_dict[topic] = sentiment
         return sentiment_dict
     
@@ -104,7 +116,7 @@ else:
         pickle.dump(tweet_sample_skip-1, f)
 
 # Insert the data in a csv file or in MongoDB
-#update_trending_csv(google_trending, twitter_trending, wikipedia_trending, matching_trends_advanced)
-update_trending_mongo(google_trending, twitter_trending, wikipedia_trending, tweet_sample)
+#update_trending_csv(google_trending, twitter_trending, wikipedia_trending, matching_trends_advanced, sentiment)
+update_trending_mongo(google_trending, twitter_trending, wikipedia_trending, tweet_sample, sentiment)
 
 print('******** Done ********\n')

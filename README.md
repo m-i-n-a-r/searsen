@@ -22,6 +22,14 @@ At the time of writing, the project consistis in 5 main files (3 for data extrac
 - **searsen_timeseries** :arrow_forward: analyzes and plot the timeseries on user input. Useful to compare the overall trends of a keyword [WIP]
 - **searsen_trends** :arrow_forward: aggregates the current time, the Twitter trending topics, the Google hot trends and the Wikipedia top articles in a single csv file or in a MongoDB table, getting a list of tweets for each topic contained both in hot trends and trending topics
 
+## How to
+Searsen requires some libraries (listed below) to work, plus some extra informations. Create a file called **searsen_credentials.py**, and make sure it contains:
+- The credentials of your Twitter application. To create one, simply [create a developer account](https://docs.inboundnow.com/guide/create-twitter-application/) on Twitter.
+- The credentials of your [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) database.
+- The full path to the language folder for [Sentistrength](http://sentistrength.wlv.ac.uk/), and the full path for the Sentistrength .jar file. Sentistrength and the language packs are not included, but you can easily find the language packs online, and request the jar by contacting the owner.
+
+To use Searsen on a server, such as an Amazon EC2 instance, you can also use the **local-server branch**, which requires a local MongoDB installation instead of MongoDB Atlas (which offers 512mb of free storage)
+
 ## Libraries and external requirements
 Searsen uses some third party software to work properly. Some examples are:
 - **Pytrends**
