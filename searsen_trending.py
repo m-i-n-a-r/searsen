@@ -37,7 +37,7 @@ def update_trending_csv(google_trending, twitter_trending, wikipedia_trending, m
         wr.writerow([current_time, google_trending, twitter_trending, wikipedia_trending, matching_trends])
 
 # Add the current time and two lists of trends, plus a sample of tweets, in a mongodb table
-def update_trending_mongo(google_trending, twitter_trending, wikipedia_trending, tweet_sample, sentiment):
+def update_trending_mongo(google_trending, twitter_trending, wikipedia_trending, tweet_sample, sentiment, full_matches):
     # Connect to MongoDB
     client = MongoClient('mongodb+srv://' + mongo_username + ':' + mongo_password + '@searsen-fyfvz.mongodb.net/test?retryWrites=true&w=majority')
     db = client.searsen
@@ -49,6 +49,7 @@ def update_trending_mongo(google_trending, twitter_trending, wikipedia_trending,
         'wikipedia': wikipedia_trending,
         #'tweet_sample': tweet_sample
         'sentiment': sentiment
+        'full matches': full_matches
     }
     db.trends.insert_one(trend)
 
@@ -86,9 +87,10 @@ Extract and compare searches and sentiment
 
 # Some parameters and operations to manage the tweet sample extraction (the script should be executed every 20 or 30 minutes)
 tweet_settings = 'tweet_sample_params'
-wikipedia_trends_amount = 50
+wikipedia_trends_amount = 99
 default_tweet_sample_skip = 0
-tweet_sample_amount = 500
+tweet_sample_amount = 700
+
 # Use Pickle to store and load the tweet_sample_skip variable
 try:
     with open(tweet_settings, 'rb') as f:
@@ -96,16 +98,19 @@ try:
 except: 
     tweet_sample_skip = default_tweet_sample_skip   
 
-
 # Fetch an ordered list of trends for Google, Twitter and Wikipedia and the matching trends list to collect a sample of tweets
 google_trending = fetch_trending_google()
 twitter_trending = fetch_trending_twitter()
 wikipedia_trending = fetch_trending_wikipedia(wikipedia_trends_amount)
-matching_trends_advanced = advanced_matching(google_trending, twitter_trending)
+matches = advanced_matching(google_trending, twitter_trending)
+
+# Also get the matches between all the 3 data sources (most of the times it will be empty)
+full_matches = advanced_matching(google_trending, twitter_trending, wikipedia_trending)
+if(not full_matches): full_matches = 'No full matches'
 
 # Check if the tweet sample should be skipped in the current execution
 if(tweet_sample_skip == 0): 
-    tweet_sample = fetch_sample(matching_trends_advanced, tweet_sample_amount)
+    tweet_sample = fetch_sample(matches, tweet_sample_amount)
     # Live sentiment analysis
     sentiment = sentiment_analysis(tweet_sample)
     with open(tweet_settings, 'wb') as f:
@@ -117,6 +122,6 @@ else:
 
 # Insert the data in a csv file or in MongoDB
 #update_trending_csv(google_trending, twitter_trending, wikipedia_trending, matching_trends_advanced, sentiment)
-update_trending_mongo(google_trending, twitter_trending, wikipedia_trending, tweet_sample, sentiment)
+update_trending_mongo(google_trending, twitter_trending, wikipedia_trending, tweet_sample, sentiment, full_matches)
 
 print('******** Done ********\n')
