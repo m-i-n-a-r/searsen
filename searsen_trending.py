@@ -64,7 +64,7 @@ def sentiment_analysis(tweet_sample, aggregate = True):
     else:
         for topic in tweet_sample.keys():
             # Scores: scale, dual, binary and trinary
-            sentiment = senti.getSentiment(tweet_sample[topic], score='scale')
+            sentiment = senti.getSentiment(tweet_sample[topic], score='trinary')
             if (aggregate == True):
                 sentisum = 0
                 summary = {}
