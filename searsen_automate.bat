@@ -1,0 +1,1 @@
+python "D:\Users\minar\Documents\Universita\Tesi Magistrale\searsen\searsen_trending.py"

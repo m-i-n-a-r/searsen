@@ -1,31 +1,21 @@
-# Matching criteria, to detect the eventual relation between two different keywords or to match similar or identical keywords
+# Matching criteria, always keep the original elements of the first list in input which match the second list
 
 import difflib
 
-# Compare two or three lists of trends using a simple list intersection
-def intersection_matching(google_trending, twitter_trending, wikipedia_trending = None):
-    processed_google = [trend.lower().replace(' ', '') for trend in google_trending]
-    processed_twitter = [trend.lower().replace(' ', '') for trend in twitter_trending]
-    if(wikipedia_trending is not None): 
-        processed_wikipedia = [trend.lower().replace('_', '') for trend in wikipedia_trending]
-        matching_trends_all = list(set(processed_google) & set(processed_twitter) & set(processed_wikipedia))
-    else:
-        matching_trends_all = list(set(processed_google) & set(processed_twitter))
+# Process the trends to be easily comparable, keeping the original strings
+def text_processing(trend_list):
+    processed_dict = {}
+    processed_dict['processed'] = [trend.lower().replace(' ', '.').replace('-', '.').replace('_', '.') for trend in trend_list]
+    processed_dict['original'] = trend_list
+    return processed_dict
 
-    return matching_trends_all
+# Compare two lists of trends, also accepting partial matches
+def lexical_matching(trend_one, trend_two):
+    trend_one_processed = text_processing(trend_one)
+    trend_two_processed = text_processing(trend_two)
+    matches = list({x['original'] for x in trend_one_processed for y in trend_two_processed if x['processed'] in y['processed'] or y['processed'] in x['processed']})
 
-# Compare two or three lists of trends also accepting partial matchings
-def advanced_matching(google_trending, twitter_trending, wikipedia_trending = None):
-    processed_google = [trend.lower().replace(' ', '').replace('-', '') for trend in google_trending]
-    processed_twitter = [trend.lower().replace(' ', '').replace('-', '') for trend in twitter_trending]
-    if(wikipedia_trending is not None):
-        processed_wikipedia = [trend.lower().replace('_', '').replace('-', '') for trend in wikipedia_trending]
-        matching_trends_first = list({twitter_trending[processed_twitter.index(y)] for x in processed_google for y in processed_twitter if x in y or y in x})
-        matching_trends = list({x for x in matching_trends_first for y in processed_wikipedia if x.lower().replace(' ', '').replace('-', '') in y or y in x.lower().replace(' ', '').replace('-', '')})
-    else:
-        matching_trends = list({twitter_trending[processed_twitter.index(y)] for x in processed_google for y in processed_twitter if x in y or y in x})
-    
-    return matching_trends
+    return matches
 
 # Compare two or three lists of trends using the difflib library
 def difflib_matching(google_trending, twitter_trending, wikipedia_trending = None):
@@ -39,11 +29,10 @@ def difflib_matching(google_trending, twitter_trending, wikipedia_trending = Non
     return matching_trends
 
 # Compare two or three lists of trends using a semantic approach TODO
-def semantic_matching(google_trending, twitter_trending, wikipedia_trending = None):   
-    if(wikipedia_trending is not None):
-        return
-    else:
-        return
+def semantic_matching(trend_one, trend_two):  
+    trend_one_processed = text_processing(trend_one)
+    trend_two_processed = text_processing(trend_two) 
+    return
 
 # Compare two or three lists of trends using all the above approaches TODO
 def hybrid_matching(google_trending, twitter_trending, wikipedia_trending = None):
@@ -52,11 +41,12 @@ def hybrid_matching(google_trending, twitter_trending, wikipedia_trending = None
     else:
         return
 
-
-# Avoid to run the script when imported
-if __name__ == '__main__':
-    # Test TODO remove
-    test_list1 = []
-    test_list2 = []
-    #result = semantic_matching(test_list1, test_list2)
-    #print(result)
+# Build a dictionary with the matches between each combination of the three sources using the above functions
+def get_all_matches(google_trending, twitter_trending, wikipedia_trending):
+    matches = {}
+    main_match = lexical_matching(twitter_trending, google_trending)
+    matches['google-twitter'] = main_match
+    matches['google-wikipedia'] = lexical_matching(google_trending, wikipedia_trending)
+    matches['twitter-wikipedia'] = lexical_matching(twitter_trending, wikipedia_trending)
+    matches['google-twitter-wikipedia'] = lexical_matching(main_match, wikipedia_trending)
+    return matches

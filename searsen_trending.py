@@ -1,4 +1,4 @@
-# Main file for trending keywords. This script should run multiple times during the day, collecting Twitter the trending topics and the Google hot trends
+# Main file for trending keywords. This script should run multiple times during the day, collecting and comparing the trends of Google, Wikipedia and Twitter
 
 import os
 import sys
@@ -15,7 +15,7 @@ from extraction_google import fetch_trending_google
 from extraction_twitter import fetch_trending_twitter
 from extraction_twitter import fetch_sample
 from extraction_wikipedia import fetch_trending_wikipedia
-from keyword_matcher import advanced_matching
+from keyword_matcher import get_all_matches
 from searsen_credentials import mongo_username, mongo_password, sentistrength_jar_full_path, sentistrength_lan_full_path_it
 
 # Add the current time and two lists of trends in a csv file
@@ -37,19 +37,21 @@ def update_trending_csv(google_trending, twitter_trending, wikipedia_trending, m
         wr.writerow([current_time, google_trending, twitter_trending, wikipedia_trending, matching_trends])
 
 # Add the current time and two lists of trends, plus a sample of tweets, in a mongodb table
-def update_trending_mongo(google_trending, twitter_trending, wikipedia_trending, tweet_sample, sentiment, full_matches):
-    # Connect to MongoDB
-    client = MongoClient('mongodb+srv://' + mongo_username + ':' + mongo_password + '@searsen-fyfvz.mongodb.net/test?retryWrites=true&w=majority')
-    db = client.searsen
+def update_trending_mongo(google_trending, twitter_trending, wikipedia_trending, tweet_sample, matches, sentiment, local = True):
+    # Connect to MongoDB Atlas or to a local MongoDB installation
+    if(local == False): client = MongoClient('mongodb+srv://' + mongo_username + ':' + mongo_password + '@searsen-fyfvz.mongodb.net/test?retryWrites=true&w=majority')
+    else: client = MongoClient('mongodb://127.0.0.1:27017')
+
+    db = client.searsendb
     # Create the object to store as a document. Every object is a row
     trend = {
         'date': datetime.datetime.utcnow(),
         'google': google_trending,
         'twitter': twitter_trending,
         'wikipedia': wikipedia_trending,
-        #'tweet_sample': tweet_sample
+        'matches': matches,
+        #'tweet_sample': tweet_sample,
         'sentiment': sentiment
-        'full matches': full_matches
     }
     db.trends.insert_one(trend)
 
@@ -69,7 +71,7 @@ def sentiment_analysis(tweet_sample, aggregate = True):
             if (aggregate == True):
                 sentisum = 0
                 summary = {}
-                for sent in sentiment: sentisum += sent
+                for sent in sentiment: sentisum += sent[2] # The trinary score returns a tuple, unless the others
                 summary['value'] = sentisum 
                 if sentisum > 0: summary['sentiment'] = 'positive'
                 else: summary['sentiment'] = 'negative'
@@ -82,14 +84,14 @@ def sentiment_analysis(tweet_sample, aggregate = True):
 # Main part of searsen trending, it executes automatically
 print('''
 *************** SEARSEN ***************
-Extract and compare searches and sentiment
+Automatic trend and sentiment dataset builder
 ''')
 
 # Some parameters and operations to manage the tweet sample extraction (the script should be executed every 20 or 30 minutes)
 tweet_settings = 'tweet_sample_params'
 wikipedia_trends_amount = 99
 default_tweet_sample_skip = 0
-tweet_sample_amount = 700
+tweet_sample_amount = 500
 
 # Use Pickle to store and load the tweet_sample_skip variable
 try:
@@ -100,28 +102,34 @@ except:
 
 # Fetch an ordered list of trends for Google, Twitter and Wikipedia and the matching trends list to collect a sample of tweets
 google_trending = fetch_trending_google()
+print('Fetched Google Trends')
 twitter_trending = fetch_trending_twitter()
+print('Fetched Twitter Trends')
 wikipedia_trending = fetch_trending_wikipedia(wikipedia_trends_amount)
-matches = advanced_matching(google_trending, twitter_trending)
+print('Fetched Wikipedia Trends')
 
-# Also get the matches between all the 3 data sources (most of the times it will be empty)
-full_matches = advanced_matching(google_trending, twitter_trending, wikipedia_trending)
-if(not full_matches): full_matches = 'No full matches'
+# Get a dictionary containing the matches of each combination of the three sources
+matches = get_all_matches(google_trending, twitter_trending, wikipedia_trending)
+print('Matches computed')
 
 # Check if the tweet sample should be skipped in the current execution
 if(tweet_sample_skip == 0): 
-    tweet_sample = fetch_sample(matches, tweet_sample_amount)
-    # Live sentiment analysis
+    tweet_sample = fetch_sample(matches['google-twitter'], tweet_sample_amount)
+    print('Fetched tweet sample')
+    # Live sentiment analysis on the google-twitter matches
     sentiment = sentiment_analysis(tweet_sample)
+    print('Sentiment computed')
     with open(tweet_settings, 'wb') as f:
         pickle.dump(default_tweet_sample_skip, f)
 else: 
     tweet_sample = 'Skipped'
+    sentiment = 'Skipped'
     with open(tweet_settings, 'wb') as f:
         pickle.dump(tweet_sample_skip-1, f)
 
-# Insert the data in a csv file or in MongoDB
-#update_trending_csv(google_trending, twitter_trending, wikipedia_trending, matching_trends_advanced, sentiment)
-update_trending_mongo(google_trending, twitter_trending, wikipedia_trending, tweet_sample, sentiment, full_matches)
+# Insert the data in a csv file or in MongoDB (Atlas or local, default is local)
+#update_trending_csv(google_trending, twitter_trending, wikipedia_trending, matches, sentiment)
+update_trending_mongo(google_trending, twitter_trending, wikipedia_trending, tweet_sample, matches, sentiment)
+print('Data saved')
 
-print('******** Done ********\n')
+print('\n*********** Done ***********\n')
