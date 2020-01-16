@@ -43,15 +43,15 @@ def update_trending_mongo(google_trending, twitter_trending, wikipedia_trending,
     else: client = MongoClient('mongodb://127.0.0.1:27017')
 
     db = client.searsendb
-    # Create the object to store as a document. Every object is a row
+    # Create the object to store as a document. Every object is a row. Storing the tweets requires a lot of memory
     trend = {
         'date': datetime.datetime.utcnow(),
         'google': google_trending,
         'twitter': twitter_trending,
         'wikipedia': wikipedia_trending,
         'matches': matches,
-        #'tweet_sample': tweet_sample,
         'sentiment': sentiment
+        #'tweet_sample': tweet_sample
     }
     db.trends.insert_one(trend)
 
