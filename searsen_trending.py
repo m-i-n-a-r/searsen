@@ -1,4 +1,4 @@
-# Main file for trending keywords. This script should run multiple times during the day, collecting and comparing the trends of Google, Wikipedia and Twitter
+# Main file to build a trend based dataset. This script should run multiple times during the day, collecting the Google, Wikipedia and Twitter trends
 
 import os
 import sys
@@ -31,10 +31,10 @@ def update_trending_csv(google_trending, twitter_trending, wikipedia_trending, m
     if(not f.is_file()): 
         with open(trending_file, 'a', newline='', encoding='utf-8') as f:
             wr = csv.writer(f, delimiter=';')
-            wr.writerow(['timpestamp', 'topics_google', 'topics_twitter', 'topics_wikipedia', 'matching_trends'])
+            wr.writerow(['timpestamp', 'topics_google', 'topics_twitter', 'topics_wikipedia', 'matching_trends', 'sentiment'])
     with open(trending_file, 'a', newline='', encoding='utf-8') as f:
         wr = csv.writer(f, delimiter=';')
-        wr.writerow([current_time, google_trending, twitter_trending, wikipedia_trending, matching_trends])
+        wr.writerow([current_time, google_trending, twitter_trending, wikipedia_trending, matching_trends, sentiment])
 
 # Add the current time and two lists of trends, plus a sample of tweets, in a mongodb table
 def update_trending_mongo(google_trending, twitter_trending, wikipedia_trending, tweet_sample, matches, sentiment, local = True):
@@ -114,7 +114,7 @@ print('Matches computed')
 
 # Check if the tweet sample should be skipped in the current execution
 if(tweet_sample_skip == 0): 
-    tweet_sample = fetch_sample(matches['google-twitter'], tweet_sample_amount)
+    tweet_sample = fetch_sample(matches['twitter-google'], tweet_sample_amount)
     print('Fetched tweet sample')
     # Live sentiment analysis on the google-twitter matches
     sentiment = sentiment_analysis(tweet_sample)
@@ -132,4 +132,4 @@ else:
 update_trending_mongo(google_trending, twitter_trending, wikipedia_trending, tweet_sample, matches, sentiment)
 print('Data saved')
 
-print('\n*********** Done ***********\n')
+print('\n***************** Done *****************\n')

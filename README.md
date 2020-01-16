@@ -26,7 +26,7 @@ At the time of writing, the project consistis in 5 main files (3 for data extrac
 ## How to
 Searsen requires some libraries (listed below) to work, plus some extra informations. Create a file called **searsen_credentials.py**, and make sure it contains:
 - The credentials of your Twitter application. To create one, simply [create a developer account](https://docs.inboundnow.com/guide/create-twitter-application/) on Twitter.
-- The credentials of your [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) database.
+- The credentials of your [MongoDB Atlas](https://www.mongodb.com/cloud/atlas), if it's being used.
 - The full path to the language folder for [Sentistrength](http://sentistrength.wlv.ac.uk/), and the full path for the Sentistrength .jar file. Sentistrength and the language packs are not included, but you can easily find the language packs online, and request the jar by contacting the owner.
 
 ## Libraries and external requirements
@@ -37,4 +37,5 @@ Searsen uses some third party software to work properly. Some examples are:
 - **Sentistrength** (Python API + java version and language packs)
 - **Pandas**
 - **Pickle**
-- **Pymongo** (MongoDB Atlas)
+- **Pymongo** (MongoDB Atlas or local)
+- **Difflib**

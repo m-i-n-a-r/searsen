@@ -9,8 +9,8 @@ def text_processing(trend_list):
     for trend in trend_list:
         processed_trend = {}
         processed_trend['original'] = trend
-        re.sub(' +', ' ', trend) # Remove multiple spaces
-        processed_trend['processed'] = trend.lower().replace('.', ' ').replace('-', ' ').replace('_', ' ')
+        re.sub(' +', ' ', trend) # Remove multiple spaces (redundant, but useful to keep the single spaces if needed)
+        processed_trend['processed'] = trend.lower().replace('.', '').replace('-', '').replace('_', '').replace(' ', '')
         processed_list.append(processed_trend)
     return processed_list
 
@@ -35,15 +35,12 @@ def semantic_matching(trend_one, trend_two):
     trend_two_processed = text_processing(trend_two) 
     return
 
-# Compare two lists of trends using all the above approaches TODO
-def hybrid_matching(trend_one, trend_two):
-    return
-
 # Build a dictionary with the matches between each combination of the three sources using the above functions
 def get_all_matches(google_trending, twitter_trending, wikipedia_trending):
     matches = {}
+    # Lexical matching seems to be the best for a list of keywords and hashtags
     main_match = lexical_matching(twitter_trending, google_trending)
-    matches['google-twitter'] = main_match
+    matches['twitter-google'] = main_match
     matches['google-wikipedia'] = lexical_matching(google_trending, wikipedia_trending)
     matches['twitter-wikipedia'] = lexical_matching(twitter_trending, wikipedia_trending)
     matches['google-twitter-wikipedia'] = lexical_matching(main_match, wikipedia_trending)
