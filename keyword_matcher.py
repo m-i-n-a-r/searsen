@@ -19,15 +19,17 @@ def lexical_matching(trend_one, trend_two):
     trend_one_processed = text_processing(trend_one)
     trend_two_processed = text_processing(trend_two)
     matches = list({x['original'] for x in trend_one_processed for y in trend_two_processed if x['processed'] in y['processed'] or y['processed'] in x['processed']})
-
+    
+    if(len(matches) == 0): return 'No matches'
     return matches
 
 # Compare two lists of trends using the difflib library (no text processing required)
 def difflib_matching(trend_one, trend_two):
     threshold = 0.7
-    matching_trends = list({x for x in trend_one for y in trend_two if difflib.SequenceMatcher(None, x, y).ratio() > threshold})
+    matches = list({x for x in trend_one for y in trend_two if difflib.SequenceMatcher(None, x, y).ratio() > threshold})
     
-    return matching_trends
+    if(len(matches) == 0): return 'No matches'
+    return matches
 
 # Compare two lists of trends using a semantic approach TODO 
 def semantic_matching(trend_one, trend_two):  

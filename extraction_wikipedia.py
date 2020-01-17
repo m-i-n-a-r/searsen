@@ -26,10 +26,10 @@ def fetch_timeseries_wikipedia(keyword, save_csv = True):
 
     return interest_over_time
 
-# Get trending articles in Italy as an ordered list, cut them if necessary (updated daily)
+# Get trending articles as an ordered list, cut them if necessary (updated daily)
 def fetch_trending_wikipedia(cut = 0):
     # Get the current date to select yesterday's trending articles (month and day must have the leading zero)
-    special_pages = ['Speciale:Ricerca', 'Pagina_principale', 'Speciale:UltimeModifiche', 'Special:Search']
+    special_pages = ['Main_Page', 'Special:Search']
     now = datetime.datetime.now() - datetime.timedelta(days=1)
     year = now.year
     month = f'{now.month:02d}'
