@@ -13,6 +13,8 @@ Google, togheter with the social networks, is a useful source of informations on
 While Google Trends offers monthly or daily data, Twitter has a set of powerful API to get the trending topics and search for specific keywords. Google Trends data are normalized in a 0-100 range.
 The desired goal is to perform an analysis, comparing a dataset from Google Trends with the data from Twitter or other social networks, trying to find the relations and using them in a machine learning system (prediction, recomendation), if possible. In addition, Searsen is able to build a dataset fetching the hot trends from Google and the trending topics from Twitter: this dataset is used to understand the similarities and correlations between this two kind of trends.
 
+The language used is english(US), and previously italian.
+
 ## Project structure
 At the time of writing, the project consistis in 5 main files (3 for data extraction, 2 for data analysis):
 - **extraction_twitter** :arrow_forward: extracts data from Twitter. It can extract both time series, trending topics or tweets for a given keyword

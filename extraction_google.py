@@ -28,14 +28,13 @@ def fetch_trending_google():
     # Login to Google
     pytrend = TrendReq()
 
-    #trends_us = pytrend.trending_searches(pn='united_states')
     try:
-        trends_it_df = pytrend.trending_searches(pn='italy')
-        trends_it_final = trends_it_df.iloc[:,0].tolist()
+        trends_df = pytrend.trending_searches(pn='united_states')
+        trends_final = trends_df.iloc[:,0].tolist()
     except: 
         return 'Error occurred'
 
-    return trends_it_final
+    return trends_final
 
 # Get a list of related keywords for a given keyword
 def fetch_related_keywords(keyword):

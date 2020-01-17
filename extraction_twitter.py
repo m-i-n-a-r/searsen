@@ -31,18 +31,18 @@ def fetch_timeseries_twitter(keyword, save_csv = True):
     
     return tweets_df
 
-# Get trending topics in Italy as an ordered list (US code = 2352824, updated every 5 minutes)
+# Get trending topics in Italy as an ordered list (US code = 2352824, IT code = 711080, updated every 5 minutes)
 def fetch_trending_twitter():
     try:
-        trends_it = api.trends_place('711080')
-        data = trends_it[0] 
+        trends = api.trends_place('2352824')
+        data = trends[0] 
         # Take the name of the trends
         trends_name = data['trends']
-        trends_it_final = [trend['name'].replace('#', '') for trend in trends_name]
+        trends_final = [trend['name'].replace('#', '') for trend in trends_name]
     except:
         return 'Error'
         
-    return trends_it_final
+    return trends_final
 
 # Fetch a sample of n tweets for each keyword in a given list
 def fetch_sample(keywords, amount, no_replies = False):
@@ -55,7 +55,7 @@ def fetch_sample(keywords, amount, no_replies = False):
             if(no_replies): query = keyword + ' -filter:retweets -filter:replies'
             else: query = keyword + ' -filter:retweets'
             # Take the full text of each tweet and manage the 100 tweets for request problem (retweets don't have the full text)
-            tweet_items = tweepy.Cursor(api.search, q=query, result_type='recent', lang = 'it', tweet_mode='extended').items(amount)
+            tweet_items = tweepy.Cursor(api.search, q=query, result_type='recent', lang = 'en', tweet_mode='extended').items(amount)
             for tweet in tweet_items: tweets.append(tweet._json['full_text'])
             sample_dict[keyword] = tweets
     except:

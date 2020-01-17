@@ -9,7 +9,7 @@ from pandas.io.json import json_normalize
 # Fetch the pageviews for a specific article
 def fetch_timeseries_wikipedia(keyword, save_csv = True):
     try:
-        interest_over_time = pageviewapi.per_article('it.wikipedia', keyword, '20151101', '20191101',
+        interest_over_time = pageviewapi.per_article('en.wikipedia', keyword, '20151101', '20191101',
                                                      access='all-access', agent='all-agents', granularity='daily')
     except: 
         print('The chosen article doesn\'t exist')
@@ -34,21 +34,21 @@ def fetch_trending_wikipedia(cut = 0):
     year = now.year
     month = f'{now.month:02d}'
     day = f'{now.day:02d}'
-    trends_it_final = []
+    trends_final = []
     # Returns an AttrDict
     try:
-        trends_it = pageviewapi.top('it.wikipedia', year, month, day, access='all-access')
+        trends = pageviewapi.top('en.wikipedia', year, month, day, access='all-access')
         counter = 0
-        for article in trends_it['items'][0]['articles']:
+        for article in trends['items'][0]['articles']:
             if(article['article'] in special_pages): continue
             else: 
-                trends_it_final.append(article['article'])
+                trends_final.append(article['article'])
                 counter += 1
                 if(counter == cut + 1): break
     # The data may not be ready around midnight
     except:
         return 'Data not ready'
-    return trends_it_final
+    return trends_final
 
 
 # Avoid to run the script when imported
