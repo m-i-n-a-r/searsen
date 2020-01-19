@@ -46,7 +46,7 @@ def fetch_trending_twitter():
 
 # Fetch a sample of n tweets for each keyword in a given list
 def fetch_sample(keywords, amount, no_replies = False):
-    if(not keywords): return 'No matching topics'
+    if(isinstance(keywords, list)): return 'No matching topics'
     sample_dict = {}
     # Fill the dict with the keyword as the key and the tweets as the value
     try:

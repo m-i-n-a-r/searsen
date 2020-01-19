@@ -125,8 +125,10 @@ if(tweet_sample_skip == 0):
         pickle.dump(default_tweet_sample_skip, f)
 else: 
     tweet_sample = 'Skipped'
+    print('Skipped tweet sample')
     sentiment = 'Skipped'
     sentiment_expanded = 'Skipped'
+    print('Skipped sentiment')
     with open(tweet_settings, 'wb') as f:
         pickle.dump(tweet_sample_skip-1, f)
 
