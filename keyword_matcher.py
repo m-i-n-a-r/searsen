@@ -6,6 +6,7 @@ import re
 # Process the trends to be easily comparable, keeping the original strings
 def text_processing(trend_list):
     processed_list = []
+    if(not isinstance(trend_list, list)) return {}
     for trend in trend_list:
         processed_trend = {}
         processed_trend['original'] = trend
@@ -25,6 +26,7 @@ def lexical_matching(trend_one, trend_two):
 
 # Compare two lists of trends using the difflib library (no text processing required)
 def difflib_matching(trend_one, trend_two):
+    if(not isinstance(trend_one, list) or not isinstance(trend_two, list)) return 'No matches'
     threshold = 0.7
     matches = list({x for x in trend_one for y in trend_two if difflib.SequenceMatcher(None, x, y).ratio() > threshold})
     
