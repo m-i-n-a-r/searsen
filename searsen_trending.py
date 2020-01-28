@@ -42,6 +42,10 @@ def update_trending_mongo(google_trending, twitter_trending, wikipedia_trending,
     if(local == False): client = MongoClient('mongodb+srv://' + mongo_username + ':' + mongo_password + '@searsen-fyfvz.mongodb.net/test?retryWrites=true&w=majority')
     else: client = MongoClient('mongodb://127.0.0.1:27017')
 
+    # Remove the "." character
+    #twitter_trending_correct = { for v in twitter_trending: v.replace('.', '') }
+    #print(twitter_trending_correct)
+
     db = client.searsendb_us
     # Create the object to store as a document. Every object is a row. Storing the tweets requires a lot of memory
     trend = {

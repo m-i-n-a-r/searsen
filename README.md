@@ -21,8 +21,9 @@ At the time of writing, the project consistis in 5 main files (3 for data extrac
 - **extraction_google** :arrow_forward: extracts data from Google. It can extract both time series or hot trends
 - **extraction_wikipedia** :arrow_forward: extracts data from Wikipedia. It can extract both time series or trending articles
 - **keyword_matcher** :arrow_forward: contains a number of matching criteria, to detect the eventual relation between two different keywords or to match similar or identical keywords [WIP]
-- **searsen_timeseries** :arrow_forward: analyzes and plot the timeseries on user input. Useful to compare the overall trends of a keyword [WIP]
+- **searsen_timeseries** :arrow_forward: fetches, analyzes or plots one or more timeseries on user input. Useful to compare the overall trends of a keyword or enrich the data [WIP]
 - **searsen_trends** :arrow_forward: aggregates the current time, the Twitter trending topics, the Google hot trends and the Wikipedia top articles in a single csv file or in a MongoDB table, thus generating a dataset. It also gets a list of tweets for each topic contained both in hot trends and trending topics and calculates the sentiment
+- **searsen_analyzer** :arrow_forward: useful functions to analyze and get results from the dataset built using searse_trends
 - **searsen_automate** :arrow_forward: a batch file to execute the dataset generator.It can be used to automate the execution of the script on a Windows machine, using the [Windows Task Scheduler](https://datatofish.com/python-script-windows-scheduler/). Remember to set the right full path to the searsen_trending script in your machine.
 
 ## How to
