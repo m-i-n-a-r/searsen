@@ -1,4 +1,4 @@
-# Main file for timeseries. Uses the extraction modules and their output to plot the time series and compare them
+# Main file for timeseries. Uses the extraction modules and their output to fetch the time series and compare them
 
 import os
 import sys

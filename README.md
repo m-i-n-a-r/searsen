@@ -2,7 +2,7 @@
 ### An attempt to use Google Trends, Twitter and Wikipedia to find the relation between interest, search and opinion
 
 <p align=center>
-	<img src='https://img.shields.io/badge/version-0.3-blue'/>
+	<img src='https://img.shields.io/badge/version-0.4-blue'/>
 	<img src='https://img.shields.io/badge/status-wip-orange'/>
 	<img src='https://img.shields.io/badge/python-3.6+-success'/>
 	<img src='https://img.shields.io/badge/-master%20thesis-yellow'/>
@@ -16,7 +16,7 @@ The desired goal is to perform an analysis, comparing a dataset from Google Tren
 The language used is english(US), and previously italian.
 
 ## Project structure
-At the time of writing, the project consistis in 5 main files (3 for data extraction, 2 for data analysis):
+At the time of writing, the project consistis in 8 main files (3 for data extraction, 4 for data analysis and enrichment, 1 for process automation):
 - **extraction_twitter** :arrow_forward: extracts data from Twitter. It can extract both time series, trending topics or tweets for a given keyword
 - **extraction_google** :arrow_forward: extracts data from Google. It can extract both time series or hot trends
 - **extraction_wikipedia** :arrow_forward: extracts data from Wikipedia. It can extract both time series or trending articles
