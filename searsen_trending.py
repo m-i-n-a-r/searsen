@@ -42,16 +42,19 @@ def update_trending_mongo(google_trending, twitter_trending, wikipedia_trending,
     if(local == False): client = MongoClient('mongodb+srv://' + mongo_username + ':' + mongo_password + '@searsen-fyfvz.mongodb.net/test?retryWrites=true&w=majority')
     else: client = MongoClient('mongodb://127.0.0.1:27017')
 
-    # Remove the "." character since it causes an error in MongoDB
-    #twitter_trending_correct = { for v in twitter_trending: v.replace('.', '') }
-    #print(twitter_trending_correct)
+    # Remove the "." character (only found in Twiter until now) since it causes an error in MongoDB
+    twitter_trending_correct = []
+    print(twitter_trending)
+    for trend in twitter_trending:
+        trend = trend.replace('.', '')
+        twitter_trending_correct.append(trend)
 
     db = client.searsendb_us
     # Create the object to store as a document. Every object is a row. Storing the tweets requires a lot of memory
     trend = {
         'date': datetime.datetime.utcnow(),
         'google': google_trending,
-        'twitter': twitter_trending,
+        'twitter': twitter_trending_correct,
         'wikipedia': wikipedia_trending,
         'matches': matches,
         'sentiment': sentiment,
