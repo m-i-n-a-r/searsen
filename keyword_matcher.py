@@ -22,7 +22,16 @@ def text_processing(trend_list, keep_spaces = False):
         processed_list.append(processed_trend)
     return processed_list
 
-# Compare two lists of trends, also accepting partial matches
+# Naive matching based on a simple list intersection
+def naive_matching(trend_one, trend_two):
+    trend_one_processed = text_processing(trend_one)
+    trend_two_processed = text_processing(trend_two)
+    matches = list({x['original'] for x in trend_one_processed for y in trend_two_processed if x['processed'] == y['processed']})
+
+    if(len(matches) == 0): return 'No matches'
+    return matches
+
+# Compare two lists of trends using an euristic, also accepting partial matches
 def lexical_matching(trend_one, trend_two):
     trend_one_processed = text_processing(trend_one)
     trend_two_processed = text_processing(trend_two)
@@ -32,9 +41,9 @@ def lexical_matching(trend_one, trend_two):
     return matches
 
 # Compare two lists of trends using the difflib library (no text processing required)
-def difflib_matching(trend_one, trend_two):
+def sequence_matching(trend_one, trend_two):
     if(not isinstance(trend_one, list) or not isinstance(trend_two, list)): return 'No matches'
-    threshold = 0.7
+    threshold = 0.6
     matches = list({x for x in trend_one for y in trend_two if difflib.SequenceMatcher(None, x, y).ratio() > threshold})
     
     if(len(matches) == 0): return 'No matches'
@@ -42,7 +51,7 @@ def difflib_matching(trend_one, trend_two):
 
 # Compare two lists of trends using a semantic approach
 def semantic_matching(trend_one, trend_two):  
-    treshold = 0.2
+    treshold = 0.3
     trend_one_processed = text_processing(trend_one, keep_spaces = True)
     trend_two_processed = text_processing(trend_two, keep_spaces = True)
     # The options are Wordnet, YAGO and DBpedia
@@ -65,7 +74,37 @@ def get_all_matches(google_trending, twitter_trending, wikipedia_trending):
 
 # Avoid to run the script when imported
 if __name__ == '__main__':
-    # Quick test
-    list_one = ['panda', 'DonaldTrump', 'NCIS', 'coronavirus', 'Kobe  Bryant', 'dog']
-    list_two = ['PandaBear', 'trumpOut', 'ncis', 'virus', 'Kobe', 'test', 'cat']
+    # Quick test with two lists containing every possible difficulty
+    
+    list_one = ["GRAMMYs","RoyalRumble","Bolton","Kobe","RIPMamba","Edge","Ariana","Lana","Demi Lovato","AOTY",
+    "Lesnar","Old Town Road","keith lee","Marss","Letter to Nipsey","Namjoon","Igor","Record of the Year",
+    "WrestleMania","DJ Khaled","Rated RKO","mondaythoughts","H.E.R.","Bonnie Raitt","Altobelli","Gary Clark Jr.",
+    "Finneas","sharon osbourne","Kim Taehyung","Christopher Cross","I Sing the Body Electric","Misty Copeland",
+    "Rockwell","Christina Mauser","Persona vs IRL","Stan Wawrinka","SOTY","Ricochet","Smokey Robinson","esam",
+    "HiltonSweepstakes","ReleaseManzoorPashteen","itshardtofeellike","MySexySunday","albumoftheyear", "Coronavirus",
+    "NCIS","EMA","HCI","China","HappyLunarNewYear","ChrisWattsConfessions","Joe Rogan","Mr. Bean","Ms. Jackson",
+    "horse","Impeachment", "Panda", "helicoptercrash", "Hilary Clinton", "Virginia", "Gun Rally"]
+    
+    list_two = ["Kobe Bryant","Kobe Bryant dead","Kobe Bryant kids","Billie Eilish","Royal Rumble 2020",
+    "Tanya Tucker","Kareem Abdul-Jabbar","Alison Morris","Steven Tyler","Demi Lovato","Camila Cabello",
+    "Tyler, the Creator","Gwen Stefani","Prince","Grammys 2020 date and time","S-76 helicopter","Lil Nas X",
+    "Celtics","Rosalia","Christina Mauser", "Corona Virus Symptoms", "ncis", "European Medicine Agency",
+    "Seth Cilessen","China Export","Lunar New Year","Chris Watts","Joe Rogan","Mr Bean","Miss Jackson",
+    "zebra","Trump Impeachment", "Panda Bear", "Helicopter Crashes", "Hilary Clinton", "Virginia Gun Rally"]
+
+    matches = ["Demi Lovato", "GRAMMYs", "RoyalRumble", "Kobe", "Christina Mauser", "Coronavirus", "NCIS",
+    "EMA", "China", "HappyLunarNewYear", "ChristWattsConfessions", "Joe Rogan", "Mr. Bean", "Ms. Jackson",
+    "Impeachment", "Panda", "helicoptercrash", "Hilary Clinton", "Virginia", "Gun Rally"]
+ 
+    print('\nSemantic Matching:')
     print(semantic_matching(list_one, list_two))
+    print('\nNaive Matching:')
+    print(naive_matching(list_one, list_two))
+    print('\nLexical Matching:')
+    print(lexical_matching(list_one, list_two))
+    print('\nSequence_matching:')
+    print(sequence_matching(list_one, list_two))
+    print('\nNUMBER OF MATCHINGS FOR THE TEST LISTS: ' + str(len(matches)))
+    print(matches)
+
+
