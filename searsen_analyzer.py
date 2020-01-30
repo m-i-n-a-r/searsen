@@ -19,6 +19,16 @@ def trend_shifted_comparison():
 def estimate_polarization():
     return
 
+# Compute the mean value of the sentiment collected on a certain trend
+def compute_sentiment(trends):
+    sentiment_computed = {}
+    for document in trends:
+        sentiment = document['sentiment']
+        if isinstance(sentiment, dict):
+             for trend in sentiment: sentiment_computed[trend] = sentiment[trend]
+    
+    return sentiment_computed
+
 # Iterate over all the documents and count
 def catalog_trends(trends, source):
     match_counter = {}
@@ -43,41 +53,30 @@ def catalog_trends(trends, source):
     return match_counter
 
 # Accept a catalogued trend list, take the first n trends and let the user assign them to a class
-def manual_sentiment_classification(trends, cut = 30):
+def manual_classification(trends, classes, cut = 30, sentiment = {}):
     elaborated = 0
-    sentiment_classification = {
-        'Ambiguous': 0,
-        'Happiness': 0,
-        'Anger': 0,
-        'Apprehension': 0,
-        'Information - Sport': 0,
-        'Information - Politic': 0,
-        'Information - Entertainment': 0,
-        'Information - Other': 0,
-        'Fear': 0
-    }
+    classification = {}
+    print('Available classes:')
+    for i in range(0, len(classes)): 
+        classification[classes[i]] = 0
+        print(str(i) + ' - ' + str(classes[i]))
+    print()
     for trend in trends:
         elaborated += 1
-        classification = input('Classify the trend: ' + str(trend) + ' occurred ' + str(trends[trend]) + 
-        ''' times, choosing between:
-        0 - Ambiguous | 1 - Happiness | 2 - Anger | 3 - Apprehension | 4 - Information - Sport | 
-        5 - Information - Politic | 6 - Information - Entertainment | 7 - Information - Other | 8 - Fear
-        => ''')
-        if(classification == '1'): sentiment = 'Happiness'
-        elif(classification == '2'): sentiment = 'Anger'
-        elif(classification == '3'): sentiment = 'Apprehension'
-        elif(classification == '4'): sentiment = 'Information - Sport'
-        elif(classification == '5'): sentiment = 'Information - Politic'
-        elif(classification == '6'): sentiment = 'Information - Entertainment'
-        elif(classification == '7'): sentiment = 'Information - Other'
-        elif(classification == '8'): sentiment = 'Fear'
-        else: 
+        if(sentiment): 
+            try: print('The detected sentiment for the following trend was: ' + str(sentiment[trend]))
+            except: pass
+        classified = input('Classify the trend: ' + str(trend) + ', occurred ' + str(trends[trend]) + ' times => ')
+        try: trend_class = classes[int(classified)]
+        except: 
             print('Invalid value, trend skipped')
+            if(elaborated == cut): break
             continue
-        sentiment_classification[sentiment] += 1
+        classification[trend_class] += 1
         if(elaborated == cut): break
 
-    return sentiment_classification
+    print('\nClassified ' + str(elaborated) + ' trends.')
+    return classification
 
 # Get a list containing the values of a single key across multiple dictionaries
 def get_multi_dictionary_values(dicts, key_name):
@@ -113,18 +112,57 @@ print('''
 Automatic trend and sentiment dataset analyzer
 ''')
 
-# Manually classify the 50 most famous trends in each group
-classified_dicts = []
-cut = 5
-google_classified = manual_sentiment_classification(google, cut)
-twitter_classified = manual_sentiment_classification(twitter, cut)
-wikipedia_classified = manual_sentiment_classification(wikipedia, cut)
-twitter_google_classified = manual_sentiment_classification(twitter_google, cut)
-twitter_wikipedia_classified = manual_sentiment_classification(twitter_wikipedia, cut)
-google_wikipedia_classified = manual_sentiment_classification(google_wikipedia, cut)
-google_twitter_wikipedia_classified = manual_sentiment_classification(google_twitter_wikipedia, cut)
+# Manually classify the n most famous trends in each group
+cut = 20
+classes = ['Politic', 'Sport', 'Music', 'Film, TV, Games', 'Death Related', ]
+#classes = ['Negative', 'Polarized Opinions', 'Positive Opinions', 'No Opinion']
+
+result = db.trends.find()
+sentiment = compute_sentiment(result)
+
+google_classified = manual_classification(google, classes, cut)
+twitter_classified = manual_classification(twitter, classes, cut)
+wikipedia_classified = manual_classification(wikipedia, classes, cut)
+twitter_google_classified = manual_classification(twitter_google, classes, cut, sentiment) # Sentiment included
+twitter_wikipedia_classified = manual_classification(twitter_wikipedia, classes, cut)
+google_wikipedia_classified = manual_classification(google_wikipedia, classes, cut)
+google_twitter_wikipedia_classified = manual_classification(google_twitter_wikipedia, classes, cut)
 classified_dicts = [google_classified, twitter_classified, wikipedia_classified, twitter_google_classified,
                 twitter_wikipedia_classified, google_wikipedia_classified, google_twitter_wikipedia_classified]
+
+# Generate a plot with the different classes and groups
+N = 7
+class_one_values = get_multi_dictionary_values(classified_dicts, classes[0])
+class_two_values = get_multi_dictionary_values(classified_dicts, classes[1])
+class_three_values = get_multi_dictionary_values(classified_dicts, classes[2])
+class_four_values = get_multi_dictionary_values(classified_dicts, classes[3])
+class_five_values = get_multi_dictionary_values(classified_dicts, classes[4])
+#class_six_values = get_multi_dictionary_values(classified_dicts, classes[5])
+#class_seven_values = get_multi_dictionary_values(classified_dicts, classes[6])
+#class_eight_values = get_multi_dictionary_values(classified_dicts, classes[7])
+#class_nine_values = get_multi_dictionary_values(classified_dicts, classes[8])
+ind = np.arange(N)
+width = 0.6
+
+p1 = plt.bar(ind, class_one_values, width)
+p2 = plt.bar(ind, class_two_values, width)
+p3 = plt.bar(ind, class_three_values, width)
+p4 = plt.bar(ind, class_four_values, width)
+p5 = plt.bar(ind, class_five_values, width)
+#p6 = plt.bar(ind, class_six_values, width)
+#p7 = plt.bar(ind, class_seven_values, width)
+#p8 = plt.bar(ind, class_eight_values, width)
+#p9 = plt.bar(ind, class_nine_values, width)
+
+plt.ylabel('Examined Trends')
+plt.title('Classification on a 250 hours dataset')
+plt.xticks(ind, ('Google', 'Twitter', 'Wikipedia', 'Twi-Goo', 'Twi-Wiki',
+                 'Goo-Wiki', 'Goo-Twi-Wiki'))
+plt.yticks(np.arange(0, 36, 5))
+plt.legend((p1[0], p2[0], p3[0], p4[0], p5[0]), 
+            (classes[0], classes[1], classes[2], classes[3], classes[4]))
+
+plt.show()
 
 #print('\nGOOGLE:\n' + str(google))
 #print('\nTWITTER:\n' + str(twitter))
@@ -141,38 +179,3 @@ classified_dicts = [google_classified, twitter_classified, wikipedia_classified,
 #print('\nTWITTER-WIKIPEDIA:\n' + str(twitter_wikipedia_classified))
 #print('\nGOOGLE-WIKIPEDIA:\n' + str(google_wikipedia_classified))
 #print('\nGOOGLE-TWITTER-WIKIPEDIA:\n' + str(google_twitter_wikipedia_classified))
-
-# Generate a plot with the different classes and groups
-N = 7
-ambiguous_values = get_multi_dictionary_values(classified_dicts, 'Ambiguous')
-happiness_values = get_multi_dictionary_values(classified_dicts, 'Happiness')
-anger_values = get_multi_dictionary_values(classified_dicts, 'Anger')
-apprehension_values = get_multi_dictionary_values(classified_dicts, 'Apprehension')
-information_sport_values = get_multi_dictionary_values(classified_dicts, 'Information - Sport')
-information_politic_values = get_multi_dictionary_values(classified_dicts, 'Information - Politic')
-information_entertainment_values = get_multi_dictionary_values(classified_dicts, 'Information - Entertainment')
-information_other_values = get_multi_dictionary_values(classified_dicts, 'Information - Other')
-fear_values = get_multi_dictionary_values(classified_dicts, 'Fear')
-ind = np.arange(N)
-width = 0.5
-
-p1 = plt.bar(ind, ambiguous_values, width)
-p2 = plt.bar(ind, happiness_values, width)
-p3 = plt.bar(ind, anger_values, width)
-p4 = plt.bar(ind, apprehension_values, width)
-p5 = plt.bar(ind, information_sport_values, width)
-p6 = plt.bar(ind, information_politic_values, width)
-p7 = plt.bar(ind, information_entertainment_values, width)
-p8 = plt.bar(ind, information_other_values, width)
-p9 = plt.bar(ind, fear_values, width)
-
-plt.ylabel('Examined Trends')
-plt.title('Sentiment / Intention Classification')
-plt.xticks(ind, ('Google', 'Twitter', 'Wikipedia', 'Twi-Goo', 'Twi-Wiki',
-                 'Goo-Wiki', 'Goo-Twi-Wiki'))
-plt.yticks(np.arange(0, 61, 5))
-plt.legend((p1[0], p2[0], p3[0], p4[0], p5[0], p6[0], p7[0], p8[0], p9[0]), 
-            ('Ambiguous', 'Happiness', 'Anger', 'Apprehension', 'Information - Sport',
-             'Information - Politic', 'Information - Entertainment', 'Information - Other', 'Fear'))
-
-plt.show()
