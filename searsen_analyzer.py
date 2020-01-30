@@ -113,8 +113,8 @@ Automatic trend and sentiment dataset analyzer
 ''')
 
 # Manually classify the n most famous trends in each group
-cut = 20
-classes = ['Politic', 'Sport', 'Music', 'Film, TV, Games', 'Death Related', ]
+cut = 40
+classes = ['Politic', 'Sport', 'Music', 'Film, TV, Games', 'Death Related', 'Other']
 #classes = ['Negative', 'Polarized Opinions', 'Positive Opinions', 'No Opinion']
 
 result = db.trends.find()
@@ -132,35 +132,35 @@ classified_dicts = [google_classified, twitter_classified, wikipedia_classified,
 
 # Generate a plot with the different classes and groups
 N = 7
-class_one_values = get_multi_dictionary_values(classified_dicts, classes[0])
-class_two_values = get_multi_dictionary_values(classified_dicts, classes[1])
-class_three_values = get_multi_dictionary_values(classified_dicts, classes[2])
-class_four_values = get_multi_dictionary_values(classified_dicts, classes[3])
-class_five_values = get_multi_dictionary_values(classified_dicts, classes[4])
-#class_six_values = get_multi_dictionary_values(classified_dicts, classes[5])
-#class_seven_values = get_multi_dictionary_values(classified_dicts, classes[6])
-#class_eight_values = get_multi_dictionary_values(classified_dicts, classes[7])
-#class_nine_values = get_multi_dictionary_values(classified_dicts, classes[8])
+class_one_values = np.array(get_multi_dictionary_values(classified_dicts, classes[0]))
+class_two_values = np.array(get_multi_dictionary_values(classified_dicts, classes[1]))
+class_three_values = np.array(get_multi_dictionary_values(classified_dicts, classes[2]))
+class_four_values = np.array(get_multi_dictionary_values(classified_dicts, classes[3]))
+class_five_values = np.array(get_multi_dictionary_values(classified_dicts, classes[4]))
+class_six_values = np.array(get_multi_dictionary_values(classified_dicts, classes[5]))
+#class_seven_values = np.array(get_multi_dictionary_values(classified_dicts, classes[6]))
+#class_eight_values = np.array(get_multi_dictionary_values(classified_dicts, classes[7]))
+#class_nine_values = np.array(get_multi_dictionary_values(classified_dicts, classes[8]))
 ind = np.arange(N)
 width = 0.6
 
 p1 = plt.bar(ind, class_one_values, width)
-p2 = plt.bar(ind, class_two_values, width)
-p3 = plt.bar(ind, class_three_values, width)
-p4 = plt.bar(ind, class_four_values, width)
-p5 = plt.bar(ind, class_five_values, width)
-#p6 = plt.bar(ind, class_six_values, width)
-#p7 = plt.bar(ind, class_seven_values, width)
-#p8 = plt.bar(ind, class_eight_values, width)
-#p9 = plt.bar(ind, class_nine_values, width)
+p2 = plt.bar(ind, class_two_values, width, bottom = class_one_values)
+p3 = plt.bar(ind, class_three_values, width, bottom = class_one_values + class_two_values)
+p4 = plt.bar(ind, class_four_values, width, bottom = class_one_values + class_two_values + class_three_values)
+p5 = plt.bar(ind, class_five_values, width, bottom = class_one_values + class_two_values + class_three_values +class_four_values)
+p6 = plt.bar(ind, class_six_values, width, bottom = class_one_values + class_two_values + class_three_values +class_four_values + class_five_values)
+#p7 = plt.bar(ind, class_seven_values, width, bottom = class_one_values + class_two_values + class_three_values +class_four_values + class_five_values + class_six_values)
+#p8 = plt.bar(ind, class_eight_values, width, bottom = class_one_values + class_two_values + class_three_values +class_four_values + class_five_values + class_six_values + class_seven_values)
+#p9 = plt.bar(ind, class_nine_values, width, bottom = class_one_values + class_two_values + class_three_values +class_four_values + class_five_values + class_six_values + class_seven_values + class_eight_values)
 
 plt.ylabel('Examined Trends')
 plt.title('Classification on a 250 hours dataset')
 plt.xticks(ind, ('Google', 'Twitter', 'Wikipedia', 'Twi-Goo', 'Twi-Wiki',
                  'Goo-Wiki', 'Goo-Twi-Wiki'))
-plt.yticks(np.arange(0, 36, 5))
-plt.legend((p1[0], p2[0], p3[0], p4[0], p5[0]), 
-            (classes[0], classes[1], classes[2], classes[3], classes[4]))
+plt.yticks(np.arange(0, 46, 5))
+plt.legend((p1[0], p2[0], p3[0], p4[0], p5[0], p6[0]), 
+            (classes[0], classes[1], classes[2], classes[3], classes[4], classes[5]))
 
 plt.show()
 
