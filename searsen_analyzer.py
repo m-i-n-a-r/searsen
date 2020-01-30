@@ -7,17 +7,43 @@ import matplotlib.pyplot as plt
 from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
 
-# Given a keyword, check how many hours it was in the trends
-def trend_lifecycle(trend):
-    return
+# Check how many hours each trend was in the trends TODO 
+def trend_lifecycle(trends):
+    lifecycle = {}
+    counting = 0
+    for trend in trends:
+        for keyword in trend['google']:
+            if keyword in lifecycle and counting == 1: lifecycle[keyword]['max_life'] += 1
+            elif keyword in lifecycle and counting == 0: 
+                lifecycle[keyword]['max_life'] = 1
+                counting = 1
+            else: lifecycle[keyword] = 1
+        for keyword in trend['twitter']:
+            continue
+    return lifecycle
 
 # Compare two set of trends shifting them in time (eg Twitter trends at 7 AM vs Google trends at 9 AM)
 def trend_shifted_comparison():
     return
 
 # Estimate the polarization for a selected keyword
-def estimate_polarization():
-    return
+def estimate_polarization(sentiment):
+    polarized = {}
+    negative = 0
+    positive = 0
+    total = 0
+    treshold = 10
+    for keyword in sentiment:
+        for rate in sentiment:
+            total += 1
+            if rate >= 0.5: positive += 1
+            if rate <= -0.5: negative += 1
+        if positive + negative > total // 2 and negative > treshold and positive > treshold: 
+            result = 'Polarized with ' + str(positive) + ' positives and ' + str(negative) + 'negatives'
+        else: result = 'Not polarized'
+        polarized[keyword] = result
+        
+    return polarized
 
 # Compute the mean value of the sentiment collected on a certain trend
 def compute_sentiment(trends):
