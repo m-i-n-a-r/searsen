@@ -135,97 +135,109 @@ def get_multi_dictionary_values(dicts, key_name):
                 values.append(dict[key])
     return values
 
+def classify_and_plot(result):
+    # The result has to be taken again from the db for the functions to work
+    google = catalog_trends(result, 'google')
+    result = db.trends.find()
+    twitter = catalog_trends(result, 'twitter')
+    result = db.trends.find()
+    wikipedia = catalog_trends(result, 'wikipedia')
+    result = db.trends.find()
+    twitter_google = catalog_trends(result, 'twitter-google')
+    result = db.trends.find()
+    twitter_wikipedia = catalog_trends(result, 'twitter-wikipedia')
+    result = db.trends.find()
+    google_wikipedia = catalog_trends(result, 'google-wikipedia')
+    result = db.trends.find()
+    google_twitter_wikipedia = catalog_trends(result, 'google-twitter-wikipedia')
+
+    # Manually classify the n most famous trends in each group
+    cut = 40
+    classes_topics = ['Politic', 'Sport', 'Music', 'Film, TV, Games', 'Death Related', 'Other']
+    #classes_feelings = ['Fear', 'Apprehension', 'Approvation', 'Curiosity', 'Anger', 'Ambiguous']
+    #classes_opinions = ['Negative', 'Polarized Opinions', 'Positive Opinions', 'No Opinion']
+    classes = classes_topics
+
+    result = db.trends.find()
+    sentiment = compute_sentiment(result)
+
+    google_classified = manual_classification(google, classes, cut)
+    twitter_classified = manual_classification(twitter, classes, cut)
+    wikipedia_classified = manual_classification(wikipedia, classes, cut)
+    twitter_google_classified = manual_classification(twitter_google, classes, cut, sentiment) # Sentiment included
+    twitter_wikipedia_classified = manual_classification(twitter_wikipedia, classes, cut)
+    google_wikipedia_classified = manual_classification(google_wikipedia, classes, cut)
+    google_twitter_wikipedia_classified = manual_classification(google_twitter_wikipedia, classes, cut)
+    classified_dicts = [google_classified, twitter_classified, wikipedia_classified, twitter_google_classified,
+                    twitter_wikipedia_classified, google_wikipedia_classified, google_twitter_wikipedia_classified]
+
+    # Generate a plot with the different classes and groups
+    N = 7
+    class_one_values = np.array(get_multi_dictionary_values(classified_dicts, classes[0]))
+    class_two_values = np.array(get_multi_dictionary_values(classified_dicts, classes[1]))
+    class_three_values = np.array(get_multi_dictionary_values(classified_dicts, classes[2]))
+    class_four_values = np.array(get_multi_dictionary_values(classified_dicts, classes[3]))
+    class_five_values = np.array(get_multi_dictionary_values(classified_dicts, classes[4]))
+    class_six_values = np.array(get_multi_dictionary_values(classified_dicts, classes[5]))
+    #class_seven_values = np.array(get_multi_dictionary_values(classified_dicts, classes[6]))
+    #class_eight_values = np.array(get_multi_dictionary_values(classified_dicts, classes[7]))
+    #class_nine_values = np.array(get_multi_dictionary_values(classified_dicts, classes[8]))
+    ind = np.arange(N)
+    width = 0.6
+
+    p1 = plt.bar(ind, class_one_values, width)
+    p2 = plt.bar(ind, class_two_values, width, bottom = class_one_values)
+    p3 = plt.bar(ind, class_three_values, width, bottom = class_one_values + class_two_values)
+    p4 = plt.bar(ind, class_four_values, width, bottom = class_one_values + class_two_values + class_three_values)
+    p5 = plt.bar(ind, class_five_values, width, bottom = class_one_values + class_two_values + class_three_values +class_four_values)
+    p6 = plt.bar(ind, class_six_values, width, bottom = class_one_values + class_two_values + class_three_values +class_four_values + class_five_values)
+    #p7 = plt.bar(ind, class_seven_values, width, bottom = class_one_values + class_two_values + class_three_values +class_four_values + class_five_values + class_six_values)
+    #p8 = plt.bar(ind, class_eight_values, width, bottom = class_one_values + class_two_values + class_three_values +class_four_values + class_five_values + class_six_values + class_seven_values)
+    #p9 = plt.bar(ind, class_nine_values, width, bottom = class_one_values + class_two_values + class_three_values +class_four_values + class_five_values + class_six_values + class_seven_values + class_eight_values)
+
+    plt.ylabel('Examined Trends')
+    plt.title('Classification on a 250 hours dataset')
+    plt.xticks(ind, ('Google', 'Twitter', 'Wikipedia', 'Twi-Goo', 'Twi-Wiki',
+                     'Goo-Wiki', 'Goo-Twi-Wiki'))
+    plt.yticks(np.arange(0, 46, 5))
+    plt.legend((p1[0], p2[0], p3[0], p4[0], p5[0], p6[0]), 
+                (classes[0], classes[1], classes[2], classes[3], classes[4], classes[5]))
+
+    plt.show()
+
+    #print('\nGOOGLE:\n' + str(google))
+    #print('\nTWITTER:\n' + str(twitter))
+    #print('\nWIKIPEDIA:\n' + str(wikipedia))
+    #print('\nTWITTER-GOOGLE:\n' + str(twitter_google))
+    #print('\nTWITTER-WIKIPEDIA:\n' + str(twitter_wikipedia))
+    #print('\nGOOGLE-WIKIPEDIA:\n' + str(google_wikipedia))
+    #print('\nGOOGLE-TWITTER-WIKIPEDIA:\n' + str(google_twitter_wikipedia) + '\n')
+
+    #print('\nGOOGLE:\n' + str(google_classified))
+    #print('\nTWITTER:\n' + str(twitter_classified))
+    #print('\nWIKIPEDIA:\n' + str(wikipedia_classified))
+    #print('\nTWITTER-GOOGLE:\n' + str(twitter_google_classified))
+    #print('\nTWITTER-WIKIPEDIA:\n' + str(twitter_wikipedia_classified))
+    #print('\nGOOGLE-WIKIPEDIA:\n' + str(google_wikipedia_classified))
+    #print('\nGOOGLE-TWITTER-WIKIPEDIA:\n' + str(google_twitter_wikipedia_classified))
+
 
 # Main part of the searsen analyzer, use the above functions to compute results
-client = MongoClient('mongodb://127.0.0.1:27017')
-db = client.searsendb_us
-
-result = db.trends.find()
-google = catalog_trends(result, 'google')
-result = db.trends.find()
-twitter = catalog_trends(result, 'twitter')
-result = db.trends.find()
-wikipedia = catalog_trends(result, 'wikipedia')
-result = db.trends.find()
-twitter_google = catalog_trends(result, 'twitter-google')
-result = db.trends.find()
-twitter_wikipedia = catalog_trends(result, 'twitter-wikipedia')
-result = db.trends.find()
-google_wikipedia = catalog_trends(result, 'google-wikipedia')
-result = db.trends.find()
-google_twitter_wikipedia = catalog_trends(result, 'google-twitter-wikipedia')
-
 print('''
 *************** SEARSEN ***************
 Automatic trend and sentiment dataset analyzer
 ''')
-
-# Manually classify the n most famous trends in each group
-cut = 40
-classes_topics = ['Politic', 'Sport', 'Music', 'Film, TV, Games', 'Death Related', 'Other']
-classes_feelings = ['Fear', 'Apprehension', 'Approvation', 'Curiosity', 'Anger', 'Ambiguous']
-classes_opinions = ['Negative', 'Polarized Opinions', 'Positive Opinions', 'No Opinion']
-classes = classes_topics
-
+client = MongoClient('mongodb://127.0.0.1:27017')
+db = client.searsendb_us
 result = db.trends.find()
-sentiment = compute_sentiment(result)
 
-google_classified = manual_classification(google, classes, cut)
-twitter_classified = manual_classification(twitter, classes, cut)
-wikipedia_classified = manual_classification(wikipedia, classes, cut)
-twitter_google_classified = manual_classification(twitter_google, classes, cut, sentiment) # Sentiment included
-twitter_wikipedia_classified = manual_classification(twitter_wikipedia, classes, cut)
-google_wikipedia_classified = manual_classification(google_wikipedia, classes, cut)
-google_twitter_wikipedia_classified = manual_classification(google_twitter_wikipedia, classes, cut)
-classified_dicts = [google_classified, twitter_classified, wikipedia_classified, twitter_google_classified,
-                twitter_wikipedia_classified, google_wikipedia_classified, google_twitter_wikipedia_classified]
+analysis = input('Choose the analysis: 1 for classify and plot, 2 for trend first appearence => ')
 
-# Generate a plot with the different classes and groups
-N = 7
-class_one_values = np.array(get_multi_dictionary_values(classified_dicts, classes[0]))
-class_two_values = np.array(get_multi_dictionary_values(classified_dicts, classes[1]))
-class_three_values = np.array(get_multi_dictionary_values(classified_dicts, classes[2]))
-class_four_values = np.array(get_multi_dictionary_values(classified_dicts, classes[3]))
-class_five_values = np.array(get_multi_dictionary_values(classified_dicts, classes[4]))
-class_six_values = np.array(get_multi_dictionary_values(classified_dicts, classes[5]))
-#class_seven_values = np.array(get_multi_dictionary_values(classified_dicts, classes[6]))
-#class_eight_values = np.array(get_multi_dictionary_values(classified_dicts, classes[7]))
-#class_nine_values = np.array(get_multi_dictionary_values(classified_dicts, classes[8]))
-ind = np.arange(N)
-width = 0.6
-
-p1 = plt.bar(ind, class_one_values, width)
-p2 = plt.bar(ind, class_two_values, width, bottom = class_one_values)
-p3 = plt.bar(ind, class_three_values, width, bottom = class_one_values + class_two_values)
-p4 = plt.bar(ind, class_four_values, width, bottom = class_one_values + class_two_values + class_three_values)
-p5 = plt.bar(ind, class_five_values, width, bottom = class_one_values + class_two_values + class_three_values +class_four_values)
-p6 = plt.bar(ind, class_six_values, width, bottom = class_one_values + class_two_values + class_three_values +class_four_values + class_five_values)
-#p7 = plt.bar(ind, class_seven_values, width, bottom = class_one_values + class_two_values + class_three_values +class_four_values + class_five_values + class_six_values)
-#p8 = plt.bar(ind, class_eight_values, width, bottom = class_one_values + class_two_values + class_three_values +class_four_values + class_five_values + class_six_values + class_seven_values)
-#p9 = plt.bar(ind, class_nine_values, width, bottom = class_one_values + class_two_values + class_three_values +class_four_values + class_five_values + class_six_values + class_seven_values + class_eight_values)
-
-plt.ylabel('Examined Trends')
-plt.title('Classification on a 250 hours dataset')
-plt.xticks(ind, ('Google', 'Twitter', 'Wikipedia', 'Twi-Goo', 'Twi-Wiki',
-                 'Goo-Wiki', 'Goo-Twi-Wiki'))
-plt.yticks(np.arange(0, 46, 5))
-plt.legend((p1[0], p2[0], p3[0], p4[0], p5[0], p6[0]), 
-            (classes[0], classes[1], classes[2], classes[3], classes[4], classes[5]))
-
-plt.show()
-
-#print('\nGOOGLE:\n' + str(google))
-#print('\nTWITTER:\n' + str(twitter))
-#print('\nWIKIPEDIA:\n' + str(wikipedia))
-#print('\nTWITTER-GOOGLE:\n' + str(twitter_google))
-#print('\nTWITTER-WIKIPEDIA:\n' + str(twitter_wikipedia))
-#print('\nGOOGLE-WIKIPEDIA:\n' + str(google_wikipedia))
-#print('\nGOOGLE-TWITTER-WIKIPEDIA:\n' + str(google_twitter_wikipedia) + '\n')
-
-#print('\nGOOGLE:\n' + str(google_classified))
-#print('\nTWITTER:\n' + str(twitter_classified))
-#print('\nWIKIPEDIA:\n' + str(wikipedia_classified))
-#print('\nTWITTER-GOOGLE:\n' + str(twitter_google_classified))
-#print('\nTWITTER-WIKIPEDIA:\n' + str(twitter_wikipedia_classified))
-#print('\nGOOGLE-WIKIPEDIA:\n' + str(google_wikipedia_classified))
-#print('\nGOOGLE-TWITTER-WIKIPEDIA:\n' + str(google_twitter_wikipedia_classified))
+if int(analysis) == 1:
+    # Manually classify the most famous trends and plot the result
+    classify_and_plot(result)
+elif int(analysis) == 2:
+    # Estimate the first arrival of each trend found in 2 or more sources
+    trend_first_appearence(result)
+else:
+    print('Nothing to do here!')
