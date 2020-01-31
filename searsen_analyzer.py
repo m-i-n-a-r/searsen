@@ -31,22 +31,43 @@ def trend_first_appearence(trends):
         'Wikipedia': 0
     }
     appeared_trends = []
+    number = 0
     for trend in trends:
-        for google_trend in text_processing(trend['google'])['processed']:
-            if google_trend not in appeared_trends and trend_existence(trends, google_trend, 'google'): 
-                first_arrival['Google'] += 1
-        for twitter_trend in text_processing(trend['twitter'])['processed']:
-            if twitter_trend not in appeared_trends and trend_existence(trends, twitter_trend, 'twitter'): 
+        number += 1
+        print('Processing document number ' + str(number))
+        # Ordered by data update times
+        for twitter_trend in text_processing(trend['twitter']):
+            if twitter_trend['processed'] not in appeared_trends and trend_existence(twitter_trend['processed'], 'twitter'): 
                 first_arrival['Twitter'] += 1
-        for wikipedia_trend in text_processing(trend['wikipedia'])['processed']:
-            if wikipedia_trend not in appeared_trends and trend_existence(trends, wikipedia_trend, 'wikipedia'): 
+                appeared_trends.append(twitter_trend['processed'])
+                print('Added to Twitter')
+        for google_trend in text_processing(trend['google']):
+            if google_trend['processed'] not in appeared_trends and trend_existence(google_trend['processed'], 'google'): 
+                first_arrival['Google'] += 1
+                appeared_trends.append(google_trend['processed'])
+                print('Added to Google')
+        for wikipedia_trend in text_processing(trend['wikipedia']):
+            if wikipedia_trend['processed'] not in appeared_trends and trend_existence(wikipedia_trend['processed'], 'wikipedia'): 
                 first_arrival['Wikipedia'] += 1
+                appeared_trends.append(wikipedia_trend['processed'])
+                print('Added to Wikipedia')
 
     return first_arrival
 
 # Verify the existence of a trend of a source in the other two sources
-def trend_existence(trends, trend, source):
-    return
+def trend_existence(trend, source):
+    exists = False
+    result = db.trends.find(no_cursor_timeout=True)
+    sources = ['google', 'twitter', 'wikipedia']
+    sources.remove(source)
+    for document in result:
+        processed_keywords_1 = text_processing(document[sources[0]])
+        processed_keywords_2 = text_processing(document[sources[1]])
+        for keyword in processed_keywords_1:
+            if keyword['processed'] == trend: exists = True
+        for keyword in processed_keywords_2:
+            if keyword['processed'] == trend: exists = True
+    return exists
 
 # Estimate the polarization for a selected keyword
 def estimate_polarization(sentiment):
@@ -229,7 +250,7 @@ Automatic trend and sentiment dataset analyzer
 ''')
 client = MongoClient('mongodb://127.0.0.1:27017')
 db = client.searsendb_us
-result = db.trends.find()
+result = db.trends.find(no_cursor_timeout=True)
 
 analysis = input('Choose the analysis: 1 for classify and plot, 2 for trend first appearence => ')
 
@@ -238,6 +259,7 @@ if int(analysis) == 1:
     classify_and_plot(result)
 elif int(analysis) == 2:
     # Estimate the first arrival of each trend found in 2 or more sources
-    trend_first_appearence(result)
+    appearences = trend_first_appearence(result)
+    print(appearences)
 else:
     print('Nothing to do here!')
