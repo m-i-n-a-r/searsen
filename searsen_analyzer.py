@@ -5,9 +5,10 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from pandas.plotting import register_matplotlib_converters
+from keyword_matcher import text_processing
 register_matplotlib_converters()
 
-# Check how many hours each trend was in the trends TODO 
+# Check how many consecutive hours each trend was in the trends counting the jumps TODO 
 def trend_lifecycle(trends):
     lifecycle = {}
     counting = 0
@@ -22,8 +23,29 @@ def trend_lifecycle(trends):
             continue
     return lifecycle
 
-# Compare two set of trends shifting them in time (eg Twitter trends at 7 AM vs Google trends at 9 AM)
-def trend_shifted_comparison():
+# Build a dictionary with the first arrival of each trend
+def trend_first_appearence(trends):
+    first_arrival = {
+        'Google': 0,
+        'Twitter': 0,
+        'Wikipedia': 0
+    }
+    appeared_trends = []
+    for trend in trends:
+        for google_trend in text_processing(trend['google'])['processed']:
+            if google_trend not in appeared_trends and trend_existence(trends, google_trend, 'google'): 
+                first_arrival['Google'] += 1
+        for twitter_trend in text_processing(trend['twitter'])['processed']:
+            if twitter_trend not in appeared_trends and trend_existence(trends, twitter_trend, 'twitter'): 
+                first_arrival['Twitter'] += 1
+        for wikipedia_trend in text_processing(trend['wikipedia'])['processed']:
+            if wikipedia_trend not in appeared_trends and trend_existence(trends, wikipedia_trend, 'wikipedia'): 
+                first_arrival['Wikipedia'] += 1
+
+    return first_arrival
+
+# Verify the existence of a trend of a source in the other two sources
+def trend_existence(trends, trend, source):
     return
 
 # Estimate the polarization for a selected keyword
@@ -140,8 +162,10 @@ Automatic trend and sentiment dataset analyzer
 
 # Manually classify the n most famous trends in each group
 cut = 40
-classes = ['Politic', 'Sport', 'Music', 'Film, TV, Games', 'Death Related', 'Other']
-#classes = ['Negative', 'Polarized Opinions', 'Positive Opinions', 'No Opinion']
+classes_topics = ['Politic', 'Sport', 'Music', 'Film, TV, Games', 'Death Related', 'Other']
+classes_feelings = ['Fear', 'Apprehension', 'Approvation', 'Curiosity', 'Anger', 'Ambiguous']
+classes_opinions = ['Negative', 'Polarized Opinions', 'Positive Opinions', 'No Opinion']
+classes = classes_topics
 
 result = db.trends.find()
 sentiment = compute_sentiment(result)
