@@ -8,22 +8,40 @@ from pandas.plotting import register_matplotlib_converters
 from keyword_matcher import text_processing
 register_matplotlib_converters()
 
-# Check how many consecutive hours each trend was in the trends counting the jumps TODO 
+# Check how many consecutive hours each trend was in the trends counting the jumps 
 def trend_lifecycle(trends):
     lifecycle = {}
-    counting = 0
+    last_trends_google = []
+    last_trends_twitter = []
     for trend in trends:
-        for keyword in trend['google']:
-            if keyword in lifecycle and counting == 1: lifecycle[keyword]['max_life'] += 1
-            elif keyword in lifecycle and counting == 0: 
-                lifecycle[keyword]['max_life'] = 1
-                counting = 1
-            else: lifecycle[keyword] = 1
-        for keyword in trend['twitter']:
-            continue
+        for keyword in trend['google']: last_trends_google.append(keyword)
+        for keyword in trend['twitter']: last_trends_twitter.append(keyword)
+
+        for group in [trend['google'], trend['twitter']]:
+            for keyword in group:
+                if keyword in last_trends_google: 
+                    if keyword in lifecycle: 
+                        lifecycle[keyword]['current_life'] += 1
+                        if lifecycle[keyword]['current_life'] > lifecycle[keyword]['max_life']:
+                            lifecycle[keyword]['max_life'] = lifecycle[keyword]['current_life']
+                    else: 
+                        lifecycle[keyword]['current_life'] = 1
+                        lifecycle[keyword]['max_life'] = 1
+                else: 
+                    if keyword in lifecycle:
+                        if lifecycle[keyword]['jumping'] == 0: 
+                            lifecycle[keyword]['jumps'] += 1
+                            lifecycle[keyword]['jumping'] = 1
+                    else: 
+                        lifecycle[keyword]['jumps'] = 1
+                        lifecycle[keyword]['jumping'] = 1
+                    lifecycle[keyword]['current_life'] = 0
+
+        last_trends_google.clear()
+        last_trends_twitter.clear()
     return lifecycle
 
-# Build a dictionary with the first arrival of each trend
+# Build a dictionary with the first arrival of each trend without using any matching criteria
 def trend_first_appearence(trends):
     first_arrival = {
         'Google': 0,
@@ -252,7 +270,12 @@ client = MongoClient('mongodb://127.0.0.1:27017')
 db = client.searsendb_us
 result = db.trends.find(no_cursor_timeout=True)
 
-analysis = input('Choose the analysis: 1 for classify and plot, 2 for trend first appearence => ')
+analysis = input('''
+Choose the analysis: 
+1 - classify and plot 
+2 - trend first appearence
+3 - trend lifecycle 
+=> ''')
 
 if int(analysis) == 1:
     # Manually classify the most famous trends and plot the result
@@ -261,5 +284,9 @@ elif int(analysis) == 2:
     # Estimate the first arrival of each trend found in 2 or more sources
     appearences = trend_first_appearence(result)
     print(appearences)
+elif int(analysis) == 3:
+    # Evaluate the lifecycle of each trend
+    lifecycle = trend_lifecycle(result)
+    print(lifecycle)
 else:
     print('Nothing to do here!')
