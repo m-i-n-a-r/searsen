@@ -11,34 +11,46 @@ register_matplotlib_converters()
 # Check how many consecutive hours each trend was in the trends counting the jumps 
 def trend_lifecycle(trends):
     lifecycle = {}
-    last_trends_google = []
-    last_trends_twitter = []
-    for trend in trends:
-        for keyword in trend['google']: last_trends_google.append(keyword)
-        for keyword in trend['twitter']: last_trends_twitter.append(keyword)
+    sources = ['google', 'twitter']
+    for i in range(0, trends.count() - 1):
+        if i == 0: 
+            last_trends_google = []
+            last_trends_twitter = []
+            last_trends = [[],[]]
+        else:
+            for keyword in trends[i]['google']: last_trends_google.append(keyword)
+            for keyword in trends[i]['twitter']: last_trends_twitter.append(keyword)
+            last_trends = [last_trends_google, last_trends_twitter]
 
-        for group in [trend['google'], trend['twitter']]:
-            for keyword in group:
-                if keyword in last_trends_google: 
+        for n in range(0,2):
+            for keyword in trends[i+1][sources[n]]:
+                print('hei' + str(i))
+                # If the keyword was trending an hour earlier
+                if keyword in last_trends[n]: 
+                    # If the keyword was already found before
                     if keyword in lifecycle: 
                         lifecycle[keyword]['current_life'] += 1
                         if lifecycle[keyword]['current_life'] > lifecycle[keyword]['max_life']:
                             lifecycle[keyword]['max_life'] = lifecycle[keyword]['current_life']
+                    # If the keyword is a new trend (this should never happen)
                     else: 
-                        lifecycle[keyword]['current_life'] = 1
-                        lifecycle[keyword]['max_life'] = 1
+                        print('\nThere\' something wrong, i can feel it!\n')
+                # If the keyword wasn't trending an hour earlier
                 else: 
+                    # If the keyword was already found before
                     if keyword in lifecycle:
                         if lifecycle[keyword]['jumping'] == 0: 
                             lifecycle[keyword]['jumps'] += 1
                             lifecycle[keyword]['jumping'] = 1
+                    # If the keyword is a new trend
                     else: 
+                        lifecycle[keyword] = {}
                         lifecycle[keyword]['jumps'] = 1
                         lifecycle[keyword]['jumping'] = 1
-                    lifecycle[keyword]['current_life'] = 0
+                        lifecycle[keyword]['max_life'] = 1
+                    lifecycle[keyword]['current_life'] = 1
 
-        last_trends_google.clear()
-        last_trends_twitter.clear()
+        last_trends.clear()
     return lifecycle
 
 # Build a dictionary with the first arrival of each trend without using any matching criteria
@@ -288,5 +300,6 @@ elif int(analysis) == 3:
     # Evaluate the lifecycle of each trend
     lifecycle = trend_lifecycle(result)
     print(lifecycle)
+    print('\nComputed the lifecycle of ' + str(len(lifecycle)) + ' keywords')
 else:
     print('Nothing to do here!')
