@@ -4,6 +4,7 @@ from pymongo import MongoClient
 import pandas as pd
 import numpy as np
 import pprint
+from collections import OrderedDict
 import matplotlib.pyplot as plt
 from pandas.plotting import register_matplotlib_converters
 from keyword_matcher import text_processing
@@ -19,39 +20,37 @@ def trend_lifecycle(trends):
             last_trends_twitter = []
             last_trends = [[],[]]
         else:
-            for keyword in trends[i]['google']: last_trends_google.append(keyword)
-            for keyword in trends[i]['twitter']: last_trends_twitter.append(keyword)
+            for keyword in trends[i-1]['google']: last_trends_google.append(keyword)
+            for keyword in trends[i-1]['twitter']: last_trends_twitter.append(keyword)
             last_trends = [last_trends_google, last_trends_twitter]
 
         for n in range(0,2):
-            for keyword in trends[i+1][sources[n]]:
-                print('hei' + str(i))
+            for keyword in trends[i][sources[n]]:
                 # If the keyword was trending an hour earlier
                 if keyword in last_trends[n]: 
-                    # If the keyword was already found before
-                    if keyword in lifecycle: 
-                        lifecycle[keyword]['current_life'] += 1
-                        if lifecycle[keyword]['current_life'] > lifecycle[keyword]['max_life']:
-                            lifecycle[keyword]['max_life'] = lifecycle[keyword]['current_life']
-                    # If the keyword is a new trend (this should never happen)
-                    else: 
-                        print('\nThere\' something wrong, i can feel it!\n')
+                    # The keyword was already found before for sure
+                    lifecycle[keyword]['current_life'] += 1
+                    if lifecycle[keyword]['current_life'] > lifecycle[keyword]['max_life']:
+                        lifecycle[keyword]['max_life'] = lifecycle[keyword]['current_life']
+
                 # If the keyword wasn't trending an hour earlier
                 else: 
                     # If the keyword was already found before
                     if keyword in lifecycle:
-                        if lifecycle[keyword]['jumping'] == 0: 
-                            lifecycle[keyword]['jumps'] += 1
-                            lifecycle[keyword]['jumping'] = 1
+                        lifecycle[keyword]['jumps'] += 1
                     # If the keyword is a new trend
                     else: 
                         lifecycle[keyword] = {}
-                        lifecycle[keyword]['jumps'] = 1
-                        lifecycle[keyword]['jumping'] = 1
+                        lifecycle[keyword]['jumps'] = 0
                         lifecycle[keyword]['max_life'] = 1
                     lifecycle[keyword]['current_life'] = 1
 
+        last_trends_google.clear()
+        last_trends_twitter.clear()
         last_trends.clear()
+
+    # Order by max life
+    lifecycle = OrderedDict(sorted(lifecycle.items(), key=lambda i: i[1]['max_life']))
     return lifecycle
 
 # Build a dictionary with the first arrival of each trend without using any matching criteria
