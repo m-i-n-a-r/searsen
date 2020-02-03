@@ -3,6 +3,7 @@
 from pymongo import MongoClient
 import pandas as pd
 import numpy as np
+import pprint
 import matplotlib.pyplot as plt
 from pandas.plotting import register_matplotlib_converters
 from keyword_matcher import text_processing
@@ -62,30 +63,30 @@ def trend_first_appearence(trends):
     }
     appeared_trends = []
     number = 0
-    for trend in trends:
+    for document in trends:
         number += 1
         print('Processing document number ' + str(number))
         # Ordered by data update times
-        for twitter_trend in text_processing(trend['twitter']):
-            if twitter_trend['processed'] not in appeared_trends and trend_existence(twitter_trend['processed'], 'twitter'): 
+        for twitter_trend in text_processing(document['twitter']):
+            if twitter_trend['processed'] not in appeared_trends and trend_alltime_existence(twitter_trend['processed'], 'twitter') and not trend_contemporary_existence(document, twitter_trend['processed'], 'twitter'): 
                 first_arrival['Twitter'] += 1
                 appeared_trends.append(twitter_trend['processed'])
                 print('Added to Twitter')
-        for google_trend in text_processing(trend['google']):
-            if google_trend['processed'] not in appeared_trends and trend_existence(google_trend['processed'], 'google'): 
+        for google_trend in text_processing(document['google']):
+            if google_trend['processed'] not in appeared_trends and trend_alltime_existence(google_trend['processed'], 'google') and not trend_contemporary_existence(document, google_trend['processed'], 'google'): 
                 first_arrival['Google'] += 1
                 appeared_trends.append(google_trend['processed'])
                 print('Added to Google')
-        for wikipedia_trend in text_processing(trend['wikipedia']):
-            if wikipedia_trend['processed'] not in appeared_trends and trend_existence(wikipedia_trend['processed'], 'wikipedia'): 
+        for wikipedia_trend in text_processing(document['wikipedia']):
+            if wikipedia_trend['processed'] not in appeared_trends and trend_alltime_existence(wikipedia_trend['processed'], 'wikipedia') and not trend_contemporary_existence(document, wikipedia_trend['processed'], 'wikipedia'): 
                 first_arrival['Wikipedia'] += 1
                 appeared_trends.append(wikipedia_trend['processed'])
                 print('Added to Wikipedia')
 
     return first_arrival
 
-# Verify the existence of a trend of a source in the other two sources
-def trend_existence(trend, source):
+# Verify the existence of a trend of a source in the other two sources in the entire dataset
+def trend_alltime_existence(trend, source):
     exists = False
     result = db.trends.find(no_cursor_timeout=True)
     sources = ['google', 'twitter', 'wikipedia']
@@ -99,24 +100,50 @@ def trend_existence(trend, source):
             if keyword['processed'] == trend: exists = True
     return exists
 
+# Verify the existence of a trend of a source in the other two sources in the same tuple
+def trend_contemporary_existence(document, trend, source):
+    exists = False
+    sources = ['google', 'twitter', 'wikipedia']
+    sources.remove(source)
+    processed_keywords_1 = text_processing(document[sources[0]])
+    processed_keywords_2 = text_processing(document[sources[1]])
+    for keyword in processed_keywords_1:
+        if keyword['processed'] == trend: exists = True
+    for keyword in processed_keywords_2:
+        if keyword['processed'] == trend: exists = True
+    return exists
+
+# Estimate the polarization of each keyword
+def estimate_total_polarization(trends):
+    polarization = {}
+    for document in trends:
+        if isinstance(document['sentiment expanded'], dict):
+            for keyword in document['sentiment expanded']:
+                if keyword not in polarization:
+                    polarization[keyword] = estimate_polarization(document['sentiment expanded'][keyword])
+    return polarization
+
 # Estimate the polarization for a selected keyword
 def estimate_polarization(sentiment):
-    polarized = {}
     negative = 0
     positive = 0
     total = 0
-    treshold = 10
-    for keyword in sentiment:
-        for rate in sentiment:
-            total += 1
-            if rate >= 0.5: positive += 1
-            if rate <= -0.5: negative += 1
-        if positive + negative > total // 2 and negative > treshold and positive > treshold: 
-            result = 'Polarized with ' + str(positive) + ' positives and ' + str(negative) + 'negatives'
-        else: result = 'Not polarized'
-        polarized[keyword] = result
-        
-    return polarized
+    treshold = 30
+    result = {}
+    for rate in sentiment:
+        total += 1
+        if float(rate) >= 0.25: positive += 1
+        if float(rate) <= -0.25: negative += 1
+    if positive + negative > total // 2 and negative > treshold and positive > treshold: 
+        result['description'] = 'Polarized with ' + str(positive) + ' positives and ' + str(negative) + ' negatives'
+        result['boolean'] = True
+    else: 
+        result['description'] = 'Not polarized with ' + str(positive) + ' positives and ' + str(negative) + ' negatives'
+        result['boolean'] = False
+
+    result['positives'] = positive
+    result['negatives'] = negative
+    return result
 
 # Compute the mean value of the sentiment collected on a certain trend
 def compute_sentiment(trends):
@@ -281,12 +308,14 @@ Automatic trend and sentiment dataset analyzer
 client = MongoClient('mongodb://127.0.0.1:27017')
 db = client.searsendb_us
 result = db.trends.find(no_cursor_timeout=True)
+pp = pprint.PrettyPrinter(indent=4)
 
 analysis = input('''
 Choose the analysis: 
 1 - classify and plot 
 2 - trend first appearence
 3 - trend lifecycle 
+4 - trend polarization
 => ''')
 
 if int(analysis) == 1:
@@ -299,7 +328,15 @@ elif int(analysis) == 2:
 elif int(analysis) == 3:
     # Evaluate the lifecycle of each trend
     lifecycle = trend_lifecycle(result)
-    print(lifecycle)
+    pp.pprint(lifecycle)
     print('\nComputed the lifecycle of ' + str(len(lifecycle)) + ' keywords')
+elif int(analysis) == 4:
+    # Estimate the polarization for each collected trend
+    polarization = estimate_total_polarization(result)
+    total = len(polarization)
+    polarized = 0
+    for keyword in polarization:
+        if(polarization[keyword]['boolean']): polarized += 1
+    print('\n' + str(polarized) + ' keywords out of ' + str(total) + ' unique keywords are polarized')
 else:
     print('Nothing to do here!')
