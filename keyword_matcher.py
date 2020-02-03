@@ -2,7 +2,10 @@
 
 import difflib
 import re
+import tagme
 from sematch.semantic.similarity import WordNetSimilarity
+
+tagme.GCUBE_TOKEN = '5756a497-bc8e-4dca-9f0e-d2286d7e6ca2-843339462'
 
 # Process the trends to be easily comparable, keeping the original strings
 def text_processing(trend_list, keep_spaces = False):
@@ -32,7 +35,7 @@ def naive_matching(trend_one, trend_two):
     return matches
 
 # Compare two lists of trends using an euristic, also accepting partial matches
-def lexical_matching(trend_one, trend_two):
+def syntactic_matching(trend_one, trend_two):
     trend_one_processed = text_processing(trend_one)
     trend_two_processed = text_processing(trend_two)
     matches = list({x['original'] for x in trend_one_processed for y in trend_two_processed if x['processed'] in y['processed'] or y['processed'] in x['processed']})
@@ -40,10 +43,22 @@ def lexical_matching(trend_one, trend_two):
     if(len(matches) == 0): return 'No matches'
     return matches
 
+# Compare two lists of trends using an euristic plus some particular conditions based on domain knowledge
+def syntactic_matching_evo(trend_one, trend_two):
+    trend_one_processed = text_processing(trend_one)
+    trend_two_processed = text_processing(trend_two)
+    matches = list({x['original'] for x in trend_one_processed for y in trend_two_processed 
+                    if (x['processed'] in y['processed'] or y['processed'] in x['processed']) and
+                    ((len(x['original']) == len(y['original']) < 4 or (len(x['original']) > 3 and len(y['original']) > 3)))
+                    and True})
+    
+    if(len(matches) == 0): return 'No matches'
+    return matches
+
 # Compare two lists of trends using the difflib library (no text processing required)
 def sequence_matching(trend_one, trend_two):
     if(not isinstance(trend_one, list) or not isinstance(trend_two, list)): return 'No matches'
-    threshold = 0.6
+    threshold = 0.5
     matches = list({x for x in trend_one for y in trend_two if difflib.SequenceMatcher(None, x, y).ratio() > threshold})
     
     if(len(matches) == 0): return 'No matches'
@@ -54,23 +69,51 @@ def semantic_matching(trend_one, trend_two):
     treshold = 0.3
     trend_one_processed = text_processing(trend_one, keep_spaces = True)
     trend_two_processed = text_processing(trend_two, keep_spaces = True)
-    # The options are Wordnet, YAGO and DBpedia
+    # The options are Wordnet, YAGO and DBpedia (only the first seems usable)
     wns = WordNetSimilarity()
     matches = list({x['original'] for x in trend_one_processed for y in trend_two_processed 
                     if wns.word_similarity(x['processed'], y['processed'], 'li') > treshold})
     
     return matches
 
+# Compare two lists of trends using Tagme annotations TODO doesn't work as expected
+def tagme_matching(trend_one, trend_two):
+    matches = []
+    trend_one_processed = text_processing(trend_one, keep_spaces = True)
+    trend_two_processed = text_processing(trend_two, keep_spaces = True)
+
+    for keyword_one in trend_one_processed:
+        for keyword_two in trend_two_processed:
+            relations = tagme.relatedness_title((keyword_one['processed'], keyword_two['processed']))
+            print('Sto confrontando le keyword ' + keyword_one['processed'] + ' e ' + keyword_two['processed'])
+            if(relations.relatedness[0].rel and int(relations.relatedness[0].rel) > 0): matches.append(keyword_one['original'])
+
+    return matches
+
 # Build a dictionary with the matches between each combination of the three sources using the above functions
 def get_all_matches(google_trending, twitter_trending, wikipedia_trending):
     matches = {}
-    # Lexical matching seems to be the best for a list of keywords and hashtags
-    main_match = lexical_matching(twitter_trending, google_trending)
+    # Syntactic matching seems to be the best for a list of keywords and hashtags
+    main_match = syntactic_matching(twitter_trending, google_trending)
     matches['twitter-google'] = main_match
-    matches['google-wikipedia'] = lexical_matching(google_trending, wikipedia_trending)
-    matches['twitter-wikipedia'] = lexical_matching(twitter_trending, wikipedia_trending)
-    matches['google-twitter-wikipedia'] = lexical_matching(main_match, wikipedia_trending)
+    matches['google-wikipedia'] = syntactic_matching(google_trending, wikipedia_trending)
+    matches['twitter-wikipedia'] = syntactic_matching(twitter_trending, wikipedia_trending)
+    matches['google-twitter-wikipedia'] = syntactic_matching(main_match, wikipedia_trending)
     return matches
+
+def compute_metrics(result, matches):
+    exact = 0
+    false_positives = 0
+    false_negatives = 0
+    for word in result:
+        if word in matches: exact += 1
+        else: false_positives += 1
+
+    false_negatives = len(matches) - exact + false_positives
+    if false_negatives > 20: false_negatives = 20
+    print('Exact Matches: ' + str(exact) + ' | False Positives: ' + str(false_positives) + ' | False Negatives: ' + str(false_negatives))
+    right_percentage = exact * 5
+    return right_percentage
 
 # Avoid to run the script when imported
 if __name__ == '__main__':
@@ -89,21 +132,33 @@ if __name__ == '__main__':
     "Tanya Tucker","Kareem Abdul-Jabbar","Alison Morris","Steven Tyler","Demi Lovato","Camila Cabello",
     "Tyler, the Creator","Gwen Stefani","Prince","Grammys 2020 date and time","S-76 helicopter","Lil Nas X",
     "Celtics","Rosalia","Christina Mauser", "Corona Virus Symptoms", "ncis", "European Medicine Agency",
-    "Seth Cilessen","China Export","Lunar New Year","Chris Watts","Joe Rogan","Mr Bean","Miss Jackson",
+    "Seth Cilessen","China Export","Lunar New Year","Chris Watts","Joe Rogan","Mr Bean","Miss Jackson","ema",
     "zebra","Trump Impeachment", "Panda Bear", "Helicopter Crashes", "Hilary Clinton", "Virginia Gun Rally"]
 
     matches = ["Demi Lovato", "GRAMMYs", "RoyalRumble", "Kobe", "Christina Mauser", "Coronavirus", "NCIS",
-    "EMA", "China", "HappyLunarNewYear", "ChristWattsConfessions", "Joe Rogan", "Mr. Bean", "Ms. Jackson",
+    "EMA", "China", "HappyLunarNewYear", "ChrisWattsConfessions", "Joe Rogan", "Mr. Bean", "Ms. Jackson",
     "Impeachment", "Panda", "helicoptercrash", "Hilary Clinton", "Virginia", "Gun Rally"]
  
     print('\nSemantic Matching:')
-    print(semantic_matching(list_one, list_two))
+    semantic = semantic_matching(list_one, list_two)
+    compute_metrics(semantic, matches)
+    #print('\nTagme matching:')
+    #tagme = tagme_matching(list_one, list_two)
+    #compute_metrics(tagme, matches)
     print('\nNaive Matching:')
-    print(naive_matching(list_one, list_two))
-    print('\nLexical Matching:')
-    print(lexical_matching(list_one, list_two))
+    naive = naive_matching(list_one, list_two)
+    compute_metrics(naive, matches)
     print('\nSequence_matching:')
-    print(sequence_matching(list_one, list_two))
+    sequence = sequence_matching(list_one, list_two)
+    compute_metrics(sequence, matches)
+    print('\nSyntactic Matching:')
+    syntactic = syntactic_matching(list_one, list_two)
+    print(syntactic)
+    compute_metrics(syntactic, matches)
+    print('\nSyntactic Matching Evo:')
+    syntactic_evo = syntactic_matching_evo(list_one, list_two)
+    print(syntactic_evo)
+    compute_metrics(syntactic_evo, matches)
     print('\nNUMBER OF MATCHINGS FOR THE TEST LISTS: ' + str(len(matches)))
     print(matches)
 

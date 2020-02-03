@@ -315,6 +315,7 @@ Choose the analysis:
 2 - trend first appearence
 3 - trend lifecycle 
 4 - trend polarization
+5 - coming soon
 => ''')
 
 if int(analysis) == 1:
@@ -337,5 +338,8 @@ elif int(analysis) == 4:
     for keyword in polarization:
         if(polarization[keyword]['boolean']): polarized += 1
     print('\n' + str(polarized) + ' keywords out of ' + str(total) + ' unique keywords are polarized')
+elif int(analysis) == 5:
+    # Coming soon
+    pass
 else:
     print('Nothing to do here!')
