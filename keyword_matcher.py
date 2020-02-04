@@ -3,6 +3,7 @@
 import difflib
 import re
 import tagme
+from fuzzywuzzy import fuzz
 from sematch.semantic.similarity import WordNetSimilarity
 
 tagme.GCUBE_TOKEN = '5756a497-bc8e-4dca-9f0e-d2286d7e6ca2-843339462'
@@ -43,17 +44,20 @@ def syntactic_matching(trend_one, trend_two):
     if(len(matches) == 0): return 'No matches'
     return matches
 
-# Compare two lists of trends using an euristic plus some particular conditions based on domain knowledge
-def syntactic_matching_evo(trend_one, trend_two):
-    trend_one_processed = text_processing(trend_one)
-    trend_two_processed = text_processing(trend_two)
-    matches = list({x['original'] for x in trend_one_processed for y in trend_two_processed 
-                    if (x['processed'] in y['processed'] or y['processed'] in x['processed']) and
-                    ((len(x['original']) == len(y['original']) < 4 or (len(x['original']) > 3 and len(y['original']) > 3)))
-                    and True})
-    
+# Compare two lists of trends using the fuzzy distances
+def fuzzy_matching(trend_one, trend_two):
+    matches = []
+    trend_one_processed = text_processing(trend_one, keep_spaces = True)
+    trend_two_processed = text_processing(trend_two, keep_spaces = True)
+    for keyword_one in trend_one_processed:
+        for keyword_two in trend_two_processed:
+            if(fuzz.ratio(keyword_one['processed'], keyword_two['processed']) > 90 or 
+            fuzz.partial_ratio(keyword_one['processed'], keyword_two['processed']) > 90 or
+            fuzz.token_sort_ratio(keyword_one['processed'], keyword_two['processed']) > 90):
+                matches.append(keyword_one['original'])
+
     if(len(matches) == 0): return 'No matches'
-    return matches
+    return list(set(matches))
 
 # Compare two lists of trends using the difflib library (no text processing required)
 def sequence_matching(trend_one, trend_two):
@@ -74,6 +78,7 @@ def semantic_matching(trend_one, trend_two):
     matches = list({x['original'] for x in trend_one_processed for y in trend_two_processed 
                     if wns.word_similarity(x['processed'], y['processed'], 'li') > treshold})
     
+    if(len(matches) == 0): return 'No matches'
     return matches
 
 # Compare two lists of trends using Tagme annotations TODO doesn't work as expected
@@ -85,9 +90,24 @@ def tagme_matching(trend_one, trend_two):
     for keyword_one in trend_one_processed:
         for keyword_two in trend_two_processed:
             relations = tagme.relatedness_title((keyword_one['processed'], keyword_two['processed']))
-            print('Sto confrontando le keyword ' + keyword_one['processed'] + ' e ' + keyword_two['processed'])
+            print('Comparing ' + keyword_one['processed'] + ' and ' + keyword_two['processed'])
             if(relations.relatedness[0].rel and int(relations.relatedness[0].rel) > 0): matches.append(keyword_one['original'])
 
+    if(len(matches) == 0): return 'No matches'
+    return matches
+
+# Compare two lists of trends using an euristic, the fuzzy distances and some particular conditions based on domain knowledge
+def hybrid_matching(trend_one, trend_two):
+    trend_one_processed = text_processing(trend_one)
+    trend_two_processed = text_processing(trend_two)
+    matches = list({x['original'] for x in trend_one_processed for y in trend_two_processed 
+                    if (x['processed'] in y['processed'] or y['processed'] in x['processed']) and
+                    ((len(x['original']) == len(y['original']) < 4 or (len(x['original']) > 3 and len(y['original']) > 3)))})
+    
+    matches_fuzzy = fuzzy_matching(trend_one, trend_two)
+    matches = list(set().union(matches, matches_fuzzy))
+
+    if(len(matches) == 0): return 'No matches'
     return matches
 
 # Build a dictionary with the matches between each combination of the three sources using the above functions
@@ -112,8 +132,8 @@ def compute_metrics(result, matches):
     false_negatives = len(matches) - exact + false_positives
     if false_negatives > 20: false_negatives = 20
     print('Exact Matches: ' + str(exact) + ' | False Positives: ' + str(false_positives) + ' | False Negatives: ' + str(false_negatives))
-    right_percentage = exact * 5
-    return right_percentage
+    performance_percentage = (exact * 5) - (5 * false_positives)
+    return performance_percentage
 
 # Avoid to run the script when imported
 if __name__ == '__main__':
@@ -141,25 +161,33 @@ if __name__ == '__main__':
  
     print('\nSemantic Matching:')
     semantic = semantic_matching(list_one, list_two)
-    compute_metrics(semantic, matches)
+    percent_semantic = compute_metrics(semantic, matches)
+    
     #print('\nTagme matching:')
     #tagme = tagme_matching(list_one, list_two)
-    #compute_metrics(tagme, matches)
+    #percent_tagme = compute_metrics(tagme, matches)
+    
     print('\nNaive Matching:')
     naive = naive_matching(list_one, list_two)
-    compute_metrics(naive, matches)
-    print('\nSequence_matching:')
+    percent_naive = compute_metrics(naive, matches)
+    
+    print('\nSequence Matching:')
     sequence = sequence_matching(list_one, list_two)
-    compute_metrics(sequence, matches)
+    percent_sequence = compute_metrics(sequence, matches)
+
     print('\nSyntactic Matching:')
     syntactic = syntactic_matching(list_one, list_two)
-    print(syntactic)
-    compute_metrics(syntactic, matches)
-    print('\nSyntactic Matching Evo:')
-    syntactic_evo = syntactic_matching_evo(list_one, list_two)
-    print(syntactic_evo)
-    compute_metrics(syntactic_evo, matches)
-    print('\nNUMBER OF MATCHINGS FOR THE TEST LISTS: ' + str(len(matches)))
-    print(matches)
+    percent_syntactic = compute_metrics(syntactic, matches)
+    
+    print('\nFuzzy Matching:')
+    fuzzy = fuzzy_matching(list_one, list_two)
+    percent_fuzzy = compute_metrics(fuzzy, matches)
+    
+    print('\nHybrid Matching:')
+    hybrid = hybrid_matching(list_one, list_two)
+    percent_hybrid = compute_metrics(hybrid, matches)
+    
+    print('\nNUMBER OF MATCHINGS FOR THE TEST LISTS: ' + str(len(matches)) + '\n')
+
 
 
