@@ -39,7 +39,10 @@ Searsen uses some third party software to work properly. Some examples are:
 - **Pageview API**
 - **Sentistrength** (Python API + java version and language packs)
 - **Pandas**
+- **Numpy**
 - **Pickle**
 - **Pymongo** (MongoDB Atlas or local)
 - **Difflib**
 - **Sematch** (manual modification needed to adapt the library to Python 3 at the time of writing)
+- **FuzzyWuzzy**
+- **Tagme**
