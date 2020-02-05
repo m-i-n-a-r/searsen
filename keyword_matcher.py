@@ -5,8 +5,9 @@ import re
 import tagme
 from fuzzywuzzy import fuzz
 from sematch.semantic.similarity import WordNetSimilarity
+from searsen_credentials import tagme_token
 
-tagme.GCUBE_TOKEN = '5756a497-bc8e-4dca-9f0e-d2286d7e6ca2-843339462'
+tagme.GCUBE_TOKEN = tagme_token
 
 # Process the trends to be easily comparable, keeping the original strings
 def text_processing(trend_list, keep_spaces = False):
@@ -146,14 +147,14 @@ if __name__ == '__main__':
     "Rockwell","Christina Mauser","Persona vs IRL","Stan Wawrinka","SOTY","Ricochet","Smokey Robinson","esam",
     "HiltonSweepstakes","ReleaseManzoorPashteen","itshardtofeellike","MySexySunday","albumoftheyear", "Coronavirus",
     "NCIS","EMA","HCI","China","HappyLunarNewYear","ChrisWattsConfessions","Joe Rogan","Mr. Bean","Ms. Jackson",
-    "horse","Impeachment", "Panda", "helicoptercrash", "Hilary Clinton", "Virginia", "Gun Rally"]
+    "horse","Impeachment","Panda","helicoptercrash","Hilary Clinton","Virginia","Gun Rally","World Cup Results"]
     
     list_two = ["Kobe Bryant","Kobe Bryant dead","Kobe Bryant kids","Billie Eilish","Royal Rumble 2020",
     "Tanya Tucker","Kareem Abdul-Jabbar","Alison Morris","Steven Tyler","Demi Lovato","Camila Cabello",
     "Tyler, the Creator","Gwen Stefani","Prince","Grammys 2020 date and time","S-76 helicopter","Lil Nas X",
     "Celtics","Rosalia","Christina Mauser", "Corona Virus Symptoms", "ncis", "European Medicine Agency",
     "Seth Cilessen","China Export","Lunar New Year","Chris Watts","Joe Rogan","Mr Bean","Miss Jackson","ema",
-    "zebra","Trump Impeachment", "Panda Bear", "Helicopter Crashes", "Hilary Clinton", "Virginia Gun Rally"]
+    "zebra","Trump Impeachment","Panda Bear","Helicopter Crashes","Hilary Clinton","Virginia Gun Rally","Results Election"]
 
     matches = ["Demi Lovato", "GRAMMYs", "RoyalRumble", "Kobe", "Christina Mauser", "Coronavirus", "NCIS",
     "EMA", "China", "HappyLunarNewYear", "ChrisWattsConfessions", "Joe Rogan", "Mr. Bean", "Ms. Jackson",
@@ -188,6 +189,3 @@ if __name__ == '__main__':
     percent_hybrid = compute_metrics(hybrid, matches)
     
     print('\nNUMBER OF MATCHINGS FOR THE TEST LISTS: ' + str(len(matches)) + '\n')
-
-
-
