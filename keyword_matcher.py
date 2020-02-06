@@ -3,9 +3,14 @@
 import difflib
 import re
 import tagme
+import seaborn as sns
+import numpy as np
 from fuzzywuzzy import fuzz
 from sematch.semantic.similarity import WordNetSimilarity
 from searsen_credentials import tagme_token
+import matplotlib.pyplot as plt
+from pandas.plotting import register_matplotlib_converters
+register_matplotlib_converters()
 
 tagme.GCUBE_TOKEN = tagme_token
 
@@ -46,24 +51,23 @@ def syntactic_matching(trend_one, trend_two):
     return matches
 
 # Compare two lists of trends using the fuzzy distances
-def fuzzy_matching(trend_one, trend_two):
+def fuzzy_matching(trend_one, trend_two, threshold = 90):
     matches = []
     trend_one_processed = text_processing(trend_one, keep_spaces = True)
     trend_two_processed = text_processing(trend_two, keep_spaces = True)
     for keyword_one in trend_one_processed:
         for keyword_two in trend_two_processed:
-            if(fuzz.ratio(keyword_one['processed'], keyword_two['processed']) > 90 or 
-            fuzz.partial_ratio(keyword_one['processed'], keyword_two['processed']) > 90 or
-            fuzz.token_sort_ratio(keyword_one['processed'], keyword_two['processed']) > 90):
+            if(fuzz.ratio(keyword_one['processed'], keyword_two['processed']) > threshold or 
+            fuzz.partial_ratio(keyword_one['processed'], keyword_two['processed']) > threshold or
+            fuzz.token_sort_ratio(keyword_one['processed'], keyword_two['processed']) > threshold):
                 matches.append(keyword_one['original'])
 
     if(len(matches) == 0): return 'No matches'
     return list(set(matches))
 
 # Compare two lists of trends using the difflib library (no text processing required)
-def sequence_matching(trend_one, trend_two):
+def sequence_matching(trend_one, trend_two, threshold = 0.5):
     if(not isinstance(trend_one, list) or not isinstance(trend_two, list)): return 'No matches'
-    threshold = 0.5
     matches = list({x for x in trend_one for y in trend_two if difflib.SequenceMatcher(None, x, y).ratio() > threshold})
     
     if(len(matches) == 0): return 'No matches'
@@ -122,6 +126,7 @@ def get_all_matches(google_trending, twitter_trending, wikipedia_trending):
     matches['google-twitter-wikipedia'] = syntactic_matching(main_match, wikipedia_trending)
     return matches
 
+# Compute the metrics (precision, recall, f-measure) for a given result of a matching algorithm
 def compute_metrics(result, matches):
     exact = 0
     false_positives = 0
@@ -134,11 +139,87 @@ def compute_metrics(result, matches):
     if false_negatives > 20: false_negatives = 20
     print('Exact Matches: ' + str(exact) + ' | False Positives: ' + str(false_positives) + ' | False Negatives: ' + str(false_negatives))
     performance_percentage = (exact * 5) - (5 * false_positives)
-    return performance_percentage
+    # Compute the data for plots etc.
+    data = {}
+    precision = exact / (exact + false_positives)
+    recall = exact / (exact + false_negatives)
+    data['exact'] = exact
+    data['false positives'] = false_positives
+    data['false negatives'] = false_negatives
+    data['percentage'] = performance_percentage
+    data['precision'] = precision
+    data['recall'] = recall
+    data['f-measure'] = (2 * precision * recall) / (precision + recall)
+    return data
+
+# Plot the ROC curve
+def plot_roc_curve(data):
+    false_pos_rate = []
+    true_pos_rate = []
+    thresholds = np.arange(0.0, 1.0, .05)
+    for i in range (0, len(thresholds)):
+        true_positives = data[i]['exact']
+        false_positives = data[i]['false positives']
+        false_pos_rate.append(false_positives/float(max(len(list_one), len(list_two))))
+        true_pos_rate.append(true_positives/float(len(matches)))
+
+    cmap = sns.cubehelix_palette(as_cmap=True)
+    fig, ax = plt.subplots()
+    fig.suptitle('ROC Curve', fontsize=18)
+    plt.axis('scaled')
+    plt.rcParams['axes.grid'] = True
+    plt.grid(True)
+    plt.xticks(np.arange(0, 1.1, 0.1))
+    plt.yticks(np.arange(0, 1.1, 0.1))
+    plt.xlabel('False Positive Rate', fontsize=14)
+    plt.ylabel('True Positives Rate', fontsize=14)
+    points = ax.scatter(false_pos_rate, true_pos_rate, c=thresholds, s=50, cmap=cmap)
+    fig.colorbar(points)
+    plt.plot(false_pos_rate, true_pos_rate)
+    plt.show()
+
+# Plot the Precision-Recall curve
+def plot_precision_recall_curve(data):
+    precisions = []
+    recalls = []
+    thresholds = np.arange(0.0, 1.0, .05)
+    for i in range (0, len(thresholds)):
+        precision = data[i]['precision']
+        recall = data[i]['recall']
+        precisions.append(precision)
+        recalls.append(recall)
+
+    cmap = sns.cubehelix_palette(as_cmap=True)
+    fig, ax = plt.subplots()
+    fig.suptitle('Precision-Recall Curve', fontsize=18)
+    plt.axis('scaled')
+    plt.rcParams['axes.grid'] = True
+    plt.grid(True)
+    plt.xticks(np.arange(0, 1.1, 0.1))
+    plt.yticks(np.arange(0, 1.1, 0.1))
+    plt.xlabel('Precision', fontsize=14)
+    plt.ylabel('Recall', fontsize=14)
+    points = ax.scatter(precisions, recalls, c=thresholds, s=50, cmap=cmap)
+    fig.colorbar(points)
+    plt.plot(precisions, recalls)
+    plt.show()
+
 
 # Avoid to run the script when imported
 if __name__ == '__main__':
-    # Quick test with two lists containing every possible difficulty
+    # Quick tests with two lists containing every possible difficulty
+    print('''
+*************** SEARSEN ***************
+Automatic trend and sentiment dataset analyzer
+''')
+
+
+    analysis = input('''
+Choose the analysis: 
+1 - complete test
+2 - threshold plot, sequence matching
+3 - threshold plot, fuzzy matching
+=> ''')
     
     list_one = ["GRAMMYs","RoyalRumble","Bolton","Kobe","RIPMamba","Edge","Ariana","Lana","Demi Lovato","AOTY",
     "Lesnar","Old Town Road","keith lee","Marss","Letter to Nipsey","Namjoon","Igor","Record of the Year",
@@ -160,32 +241,59 @@ if __name__ == '__main__':
     "EMA", "China", "HappyLunarNewYear", "ChrisWattsConfessions", "Joe Rogan", "Mr. Bean", "Ms. Jackson",
     "Impeachment", "Panda", "helicoptercrash", "Hilary Clinton", "Virginia", "Gun Rally"]
  
-    print('\nSemantic Matching:')
-    semantic = semantic_matching(list_one, list_two)
-    percent_semantic = compute_metrics(semantic, matches)
+    if(int(analysis) == 1):
+        print('\nSemantic Matching:')
+        semantic = semantic_matching(list_one, list_two)
+        data_semantic = compute_metrics(semantic, matches)
     
-    #print('\nTagme matching:')
-    #tagme = tagme_matching(list_one, list_two)
-    #percent_tagme = compute_metrics(tagme, matches)
+        #print('\nTagme matching:')
+        #tagme = tagme_matching(list_one, list_two)
+        #data_tagme = compute_metrics(tagme, matches)
     
-    print('\nNaive Matching:')
-    naive = naive_matching(list_one, list_two)
-    percent_naive = compute_metrics(naive, matches)
+        print('\nNaive Matching:')
+        naive = naive_matching(list_one, list_two)
+        data_naive = compute_metrics(naive, matches)
     
-    print('\nSequence Matching:')
-    sequence = sequence_matching(list_one, list_two)
-    percent_sequence = compute_metrics(sequence, matches)
+        print('\nSequence Matching:')
+        sequence = sequence_matching(list_one, list_two)
+        data_sequence = compute_metrics(sequence, matches)
 
-    print('\nSyntactic Matching:')
-    syntactic = syntactic_matching(list_one, list_two)
-    percent_syntactic = compute_metrics(syntactic, matches)
+        print('\nSyntactic Matching:')
+        syntactic = syntactic_matching(list_one, list_two)
+        data_syntactic = compute_metrics(syntactic, matches)
     
-    print('\nFuzzy Matching:')
-    fuzzy = fuzzy_matching(list_one, list_two)
-    percent_fuzzy = compute_metrics(fuzzy, matches)
+        print('\nFuzzy Matching:')
+        fuzzy = fuzzy_matching(list_one, list_two)
+        data_fuzzy = compute_metrics(fuzzy, matches)
     
-    print('\nHybrid Matching:')
-    hybrid = hybrid_matching(list_one, list_two)
-    percent_hybrid = compute_metrics(hybrid, matches)
+        print('\nHybrid Matching:')
+        hybrid = hybrid_matching(list_one, list_two)
+        data_hybrid = compute_metrics(hybrid, matches)
     
-    print('\nNUMBER OF MATCHINGS FOR THE TEST LISTS: ' + str(len(matches)) + '\n')
+        print('\nNUMBER OF MATCHINGS FOR THE TEST LISTS: ' + str(len(matches)) + '\n')
+    
+    elif(int(analysis) == 2):
+        aggregated_data_sequence = []
+        for i in range(0,101,5):
+            threshold = i / 100
+            if(threshold == 1): threshold = 0.99
+            print('\nSequence Matching, threshold: ' + str(threshold))
+            sequence = sequence_matching(list_one, list_two, threshold)
+            data_sequence = compute_metrics(sequence, matches)
+            aggregated_data_sequence.append(data_sequence)
+        #plot_roc_curve(aggregated_data_sequence)
+        plot_precision_recall_curve(aggregated_data_sequence)
+
+    elif(int(analysis) == 3):
+        aggregated_data_fuzzy = []
+        for i in range(0,101,5):
+            threshold = i
+            if(threshold == 100): threshold = 99
+            print('\nFuzzy Matching, threshold: ' + str(threshold))
+            fuzzy = fuzzy_matching(list_one, list_two, threshold)
+            data_fuzzy = compute_metrics(fuzzy, matches)
+            aggregated_data_fuzzy.append(data_fuzzy) 
+        #plot_roc_curve(aggregated_data_fuzzy)
+        plot_precision_recall_curve(aggregated_data_fuzzy)
+    
+    else: print('Nothing to do here!')
