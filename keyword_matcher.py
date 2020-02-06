@@ -156,52 +156,58 @@ def compute_metrics(result, matches):
 def plot_roc_curve(data):
     false_pos_rate = []
     true_pos_rate = []
-    thresholds = np.arange(0.0, 1.0, .05)
+    thresholds = np.arange(0.0, 1.01, .05)
     for i in range (0, len(thresholds)):
         true_positives = data[i]['exact']
         false_positives = data[i]['false positives']
         false_pos_rate.append(false_positives/float(max(len(list_one), len(list_two))))
         true_pos_rate.append(true_positives/float(len(matches)))
 
-    cmap = sns.cubehelix_palette(as_cmap=True)
+    cmap = sns.cubehelix_palette(8, start=.5, rot=-.75, dark=0.2, light=0.5, as_cmap=True)
     fig, ax = plt.subplots()
     fig.suptitle('ROC Curve', fontsize=18)
     plt.axis('scaled')
     plt.rcParams['axes.grid'] = True
-    plt.grid(True)
+    plt.grid(True, zorder=1)
     plt.xticks(np.arange(0, 1.1, 0.1))
     plt.yticks(np.arange(0, 1.1, 0.1))
     plt.xlabel('False Positive Rate', fontsize=14)
     plt.ylabel('True Positives Rate', fontsize=14)
-    points = ax.scatter(false_pos_rate, true_pos_rate, c=thresholds, s=50, cmap=cmap)
-    fig.colorbar(points)
-    plt.plot(false_pos_rate, true_pos_rate)
+    plt.plot(false_pos_rate, true_pos_rate, color="grey", zorder=2)
+    points = ax.scatter(false_pos_rate, true_pos_rate, c=thresholds, s=60, cmap=cmap, zorder=3)
+    cbar = fig.colorbar(points)
+    cbar.set_label('Treshold', rotation=90)
+    cbar.set_ticks([0.00, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.00])
+    cbar.set_ticklabels(['0.00', '0.05', '0.10', '0.15', '0.20', '0.25', '0.30', '0.35', '0.40', '0.45', '0.50', '0.55', '0.60', '0.65', '0.70', '0.75', '0.80', '0.85', '0.90', '0.95', '1.00'])
     plt.show()
 
 # Plot the Precision-Recall curve
 def plot_precision_recall_curve(data):
     precisions = []
     recalls = []
-    thresholds = np.arange(0.0, 1.0, .05)
+    thresholds = np.arange(0.0, 1.01, .05)
     for i in range (0, len(thresholds)):
         precision = data[i]['precision']
         recall = data[i]['recall']
         precisions.append(precision)
         recalls.append(recall)
 
-    cmap = sns.cubehelix_palette(as_cmap=True)
+    cmap = sns.cubehelix_palette(8, start=.5, rot=-.75, dark=0.1, light=0.6, as_cmap=True)
     fig, ax = plt.subplots()
     fig.suptitle('Precision-Recall Curve', fontsize=18)
     plt.axis('scaled')
     plt.rcParams['axes.grid'] = True
-    plt.grid(True)
+    plt.grid(True, zorder=1)
     plt.xticks(np.arange(0, 1.1, 0.1))
     plt.yticks(np.arange(0, 1.1, 0.1))
     plt.xlabel('Precision', fontsize=14)
     plt.ylabel('Recall', fontsize=14)
-    points = ax.scatter(precisions, recalls, c=thresholds, s=50, cmap=cmap)
-    fig.colorbar(points)
-    plt.plot(precisions, recalls)
+    plt.plot(precisions, recalls, color="grey", zorder=2)
+    points = ax.scatter(precisions, recalls, c=thresholds, s=60, cmap=cmap, zorder=3)
+    cbar = fig.colorbar(points)
+    cbar.set_label('Treshold', rotation=90)
+    cbar.set_ticks([0.00, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.00])
+    cbar.set_ticklabels(['0.00', '0.05', '0.10', '0.15', '0.20', '0.25', '0.30', '0.35', '0.40', '0.45', '0.50', '0.55', '0.60', '0.65', '0.70', '0.75', '0.80', '0.85', '0.90', '0.95', '1.00'])
     plt.show()
 
 
@@ -210,15 +216,15 @@ if __name__ == '__main__':
     # Quick tests with two lists containing every possible difficulty
     print('''
 *************** SEARSEN ***************
-Automatic trend and sentiment dataset analyzer
+Automatic keyword matching module
 ''')
 
 
     analysis = input('''
 Choose the analysis: 
-1 - complete test
-2 - threshold plot, sequence matching
-3 - threshold plot, fuzzy matching
+1 - complete test on every algorithm
+2 - ROC and P-R curves, sequence matching
+3 - ROC and P-R curves, fuzzy matching
 => ''')
     
     list_one = ["GRAMMYs","RoyalRumble","Bolton","Kobe","RIPMamba","Edge","Ariana","Lana","Demi Lovato","AOTY",
@@ -281,7 +287,7 @@ Choose the analysis:
             sequence = sequence_matching(list_one, list_two, threshold)
             data_sequence = compute_metrics(sequence, matches)
             aggregated_data_sequence.append(data_sequence)
-        #plot_roc_curve(aggregated_data_sequence)
+        plot_roc_curve(aggregated_data_sequence)
         plot_precision_recall_curve(aggregated_data_sequence)
 
     elif(int(analysis) == 3):
@@ -293,7 +299,7 @@ Choose the analysis:
             fuzzy = fuzzy_matching(list_one, list_two, threshold)
             data_fuzzy = compute_metrics(fuzzy, matches)
             aggregated_data_fuzzy.append(data_fuzzy) 
-        #plot_roc_curve(aggregated_data_fuzzy)
+        plot_roc_curve(aggregated_data_fuzzy)
         plot_precision_recall_curve(aggregated_data_fuzzy)
     
     else: print('Nothing to do here!')
