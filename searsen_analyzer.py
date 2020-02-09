@@ -4,6 +4,7 @@ from pymongo import MongoClient
 import pandas as pd
 import numpy as np
 import pprint
+import seaborn as sns
 from collections import OrderedDict
 import matplotlib.pyplot as plt
 from pandas.plotting import register_matplotlib_converters
@@ -229,8 +230,9 @@ def classify_and_plot(result):
     google_twitter_wikipedia = catalog_trends(result, 'google-twitter-wikipedia')
 
     # Manually classify the n most famous trends in each group
-    cut = 40
+    cut = 50
     classes_topics = ['Politic', 'Sport', 'Music', 'Film, TV, Games', 'Death Related', 'Other']
+    #classes_entities = ['Person', 'Location', 'Public Event', 'Animal', 'Fictional', 'Other']
     #classes_feelings = ['Fear', 'Apprehension', 'Approvation', 'Curiosity', 'Anger', 'Ambiguous']
     #classes_opinions = ['Negative', 'Polarized Opinions', 'Positive Opinions', 'No Opinion']
     classes = classes_topics
@@ -262,21 +264,23 @@ def classify_and_plot(result):
     ind = np.arange(N)
     width = 0.6
 
-    p1 = plt.bar(ind, class_one_values, width)
-    p2 = plt.bar(ind, class_two_values, width, bottom = class_one_values)
-    p3 = plt.bar(ind, class_three_values, width, bottom = class_one_values + class_two_values)
-    p4 = plt.bar(ind, class_four_values, width, bottom = class_one_values + class_two_values + class_three_values)
-    p5 = plt.bar(ind, class_five_values, width, bottom = class_one_values + class_two_values + class_three_values +class_four_values)
-    p6 = plt.bar(ind, class_six_values, width, bottom = class_one_values + class_two_values + class_three_values +class_four_values + class_five_values)
-    #p7 = plt.bar(ind, class_seven_values, width, bottom = class_one_values + class_two_values + class_three_values +class_four_values + class_five_values + class_six_values)
-    #p8 = plt.bar(ind, class_eight_values, width, bottom = class_one_values + class_two_values + class_three_values +class_four_values + class_five_values + class_six_values + class_seven_values)
-    #p9 = plt.bar(ind, class_nine_values, width, bottom = class_one_values + class_two_values + class_three_values +class_four_values + class_five_values + class_six_values + class_seven_values + class_eight_values)
+    # Set the color
+    palette = sns.color_palette('Set2')
+    p1 = plt.bar(ind, class_one_values, width, color=palette[0])
+    p2 = plt.bar(ind, class_two_values, width, bottom=class_one_values, color=palette[1])
+    p3 = plt.bar(ind, class_three_values, width, bottom=class_one_values + class_two_values, color=palette[2])
+    p4 = plt.bar(ind, class_four_values, width, bottom=class_one_values + class_two_values + class_three_values, color=palette[3])
+    p5 = plt.bar(ind, class_five_values, width, bottom=class_one_values + class_two_values + class_three_values +class_four_values, color=palette[4])
+    p6 = plt.bar(ind, class_six_values, width, bottom=class_one_values + class_two_values + class_three_values +class_four_values + class_five_values, color=palette[5])
+    #p7 = plt.bar(ind, class_seven_values, width, bottom = class_one_values + class_two_values + class_three_values +class_four_values + class_five_values + class_six_values, color=palette[6])
+    #p8 = plt.bar(ind, class_eight_values, width, bottom = class_one_values + class_two_values + class_three_values +class_four_values + class_five_values + class_six_values + class_seven_values, color=palette[7])
+    #p9 = plt.bar(ind, class_nine_values, width, bottom = class_one_values + class_two_values + class_three_values +class_four_values + class_five_values + class_six_values + class_seven_values + class_eight_values, color=palette[8])
 
     plt.ylabel('Examined Trends')
     plt.title('Classification on a 250 hours dataset')
     plt.xticks(ind, ('Google', 'Twitter', 'Wikipedia', 'Twi-Goo', 'Twi-Wiki',
                      'Goo-Wiki', 'Goo-Twi-Wiki'))
-    plt.yticks(np.arange(0, 46, 5))
+    plt.yticks(np.arange(0, 56, 5))
     plt.legend((p1[0], p2[0], p3[0], p4[0], p5[0], p6[0]), 
                 (classes[0], classes[1], classes[2], classes[3], classes[4], classes[5]))
 
@@ -306,6 +310,8 @@ Automatic trend and sentiment dataset analyzer
 ''')
 client = MongoClient('mongodb://127.0.0.1:27017')
 db = client.searsendb_us
+#db = client.searsendb_us_2
+#db = client.searsendb_it
 result = db.trends.find(no_cursor_timeout=True)
 pp = pprint.PrettyPrinter(indent=4)
 
