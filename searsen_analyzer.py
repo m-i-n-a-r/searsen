@@ -57,9 +57,12 @@ def trend_lifecycle(trends):
 # Build a dictionary with the first arrival of each trend without using any matching criteria
 def trend_first_appearence(trends):
     first_arrival = {
-        'Google': 0,
-        'Twitter': 0,
-        'Wikipedia': 0
+        'google': 0,
+        'twitter': 0,
+        'wikipedia': 0,
+        'google-keywords': [],
+        'twitter-keywords': [],
+        'wikipedia-keywords': []
     }
     appeared_trends = []
     number = 0
@@ -69,17 +72,20 @@ def trend_first_appearence(trends):
         # Ordered by data update times
         for twitter_trend in text_processing(document['twitter']):
             if twitter_trend['processed'] not in appeared_trends and trend_alltime_existence(twitter_trend['processed'], 'twitter') and not trend_contemporary_existence(document, twitter_trend['processed'], 'twitter'): 
-                first_arrival['Twitter'] += 1
+                first_arrival['twitter'] += 1
+                first_arrival['twitter-keywords'].append(twitter_trend['original'])
                 appeared_trends.append(twitter_trend['processed'])
                 print('Added to Twitter')
         for google_trend in text_processing(document['google']):
             if google_trend['processed'] not in appeared_trends and trend_alltime_existence(google_trend['processed'], 'google') and not trend_contemporary_existence(document, google_trend['processed'], 'google'): 
-                first_arrival['Google'] += 1
+                first_arrival['google'] += 1
+                first_arrival['google-keywords'].append(google_trend['original'])
                 appeared_trends.append(google_trend['processed'])
                 print('Added to Google')
         for wikipedia_trend in text_processing(document['wikipedia']):
             if wikipedia_trend['processed'] not in appeared_trends and trend_alltime_existence(wikipedia_trend['processed'], 'wikipedia') and not trend_contemporary_existence(document, wikipedia_trend['processed'], 'wikipedia'): 
-                first_arrival['Wikipedia'] += 1
+                first_arrival['wikipedia-keywords'].append(wikipedia_trend['original'])
+                first_arrival['wikipedia'] += 1
                 appeared_trends.append(wikipedia_trend['processed'])
                 print('Added to Wikipedia')
 
@@ -179,7 +185,7 @@ def catalog_trends(trends, source):
     return match_counter
 
 # Accept a catalogued trend list, take the first n trends and let the user assign them to a class
-def manual_classification(trends, classes, cut = 30, sentiment = {}):
+def manual_classification(trends, classes, amount, cut = 30, sentiment = {}):
     elaborated = 0
     classification = {}
     print('Available classes:')
@@ -198,7 +204,9 @@ def manual_classification(trends, classes, cut = 30, sentiment = {}):
             print('Invalid value, trend skipped')
             if(elaborated == cut): break
             continue
-        classification[trend_class] += 1
+        # Choose to consider the amount of times a trend appeared or not 
+        if(not amount): classification[trend_class] += 1
+        else: classification[trend_class] += trends[trend]
         if(elaborated == cut): break
 
     print('\nClassified ' + str(elaborated) + ' trends.')
@@ -213,7 +221,7 @@ def get_multi_dictionary_values(dicts, key_name):
                 values.append(dict[key])
     return values
 
-def classify_and_plot(result):
+def classify_and_plot(result, cut = 30, amount = False):
     # The result has to be taken again from the db for the functions to work
     google = catalog_trends(result, 'google')
     result = db.trends.find()
@@ -230,23 +238,25 @@ def classify_and_plot(result):
     google_twitter_wikipedia = catalog_trends(result, 'google-twitter-wikipedia')
 
     # Manually classify the n most famous trends in each group
-    cut = 50
-    classes_topics = ['Politic', 'Sport', 'Music', 'Film, TV, Games', 'Death Related', 'Other']
-    #classes_entities = ['Person', 'Location', 'Public Event', 'Animal', 'Fictional', 'Other']
-    #classes_feelings = ['Fear', 'Apprehension', 'Approvation', 'Curiosity', 'Anger', 'Ambiguous']
-    #classes_opinions = ['Negative', 'Polarized Opinions', 'Positive Opinions', 'No Opinion']
-    classes = classes_topics
+    classes_topics = ['Politic', 'Sport', 'Music', 'Film, TV, Games, Books', 'Death Related', 'Viral Trends', 'Other']
+    classes_topics_2 = ['Politic', 'Sport', 'Entertainment', 'Health', 'Celebrity Death', 'Social and Public Trend', 'Other']
+    classes_entities = ['Person', 'Location', 'Event', 'Animal', 'Fictional', 'Disease', 'Other']
+    classes_feelings = ['Fear', 'Apprehension', 'Approvation', 'Curiosity', 'Anger', 'Confusion', 'Ambiguous']
+    classes_opinions = ['Negative Opinions', 'Polarized Opinions', 'Positive Opinions', 'No Opinion']
+    classes_list = [classes_topics, classes_topics_2, classes_entities, classes_feelings, classes_opinions]
+    classes = classes_list[1]
 
-    result = db.trends.find()
+    result = db.trends.find(no_cursor_timeout=True)
     sentiment = compute_sentiment(result)
 
-    google_classified = manual_classification(google, classes, cut)
-    twitter_classified = manual_classification(twitter, classes, cut)
-    wikipedia_classified = manual_classification(wikipedia, classes, cut)
-    twitter_google_classified = manual_classification(twitter_google, classes, cut, sentiment) # Sentiment included
-    twitter_wikipedia_classified = manual_classification(twitter_wikipedia, classes, cut)
-    google_wikipedia_classified = manual_classification(google_wikipedia, classes, cut)
-    google_twitter_wikipedia_classified = manual_classification(google_twitter_wikipedia, classes, cut)
+    google_classified = manual_classification(google, classes, amount, cut)
+    twitter_classified = manual_classification(twitter, classes, amount, cut)
+    wikipedia_classified = manual_classification(wikipedia, classes, amount, cut)
+    twitter_google_classified = manual_classification(twitter_google, classes, amount, cut, sentiment) # Sentiment included
+    twitter_wikipedia_classified = manual_classification(twitter_wikipedia, classes, amount, cut)
+    google_wikipedia_classified = manual_classification(google_wikipedia, classes, amount, cut)
+    google_twitter_wikipedia_classified = manual_classification(google_twitter_wikipedia, classes, amount, cut)
+    
     classified_dicts = [google_classified, twitter_classified, wikipedia_classified, twitter_google_classified,
                     twitter_wikipedia_classified, google_wikipedia_classified, google_twitter_wikipedia_classified]
 
@@ -258,31 +268,31 @@ def classify_and_plot(result):
     class_four_values = np.array(get_multi_dictionary_values(classified_dicts, classes[3]))
     class_five_values = np.array(get_multi_dictionary_values(classified_dicts, classes[4]))
     class_six_values = np.array(get_multi_dictionary_values(classified_dicts, classes[5]))
-    #class_seven_values = np.array(get_multi_dictionary_values(classified_dicts, classes[6]))
+    class_seven_values = np.array(get_multi_dictionary_values(classified_dicts, classes[6]))
     #class_eight_values = np.array(get_multi_dictionary_values(classified_dicts, classes[7]))
     #class_nine_values = np.array(get_multi_dictionary_values(classified_dicts, classes[8]))
     ind = np.arange(N)
-    width = 0.6
+    width = 0.7
 
     # Set the color
-    palette = sns.color_palette('Set2')
+    palette = sns.color_palette('muted', N)
     p1 = plt.bar(ind, class_one_values, width, color=palette[0])
     p2 = plt.bar(ind, class_two_values, width, bottom=class_one_values, color=palette[1])
     p3 = plt.bar(ind, class_three_values, width, bottom=class_one_values + class_two_values, color=palette[2])
     p4 = plt.bar(ind, class_four_values, width, bottom=class_one_values + class_two_values + class_three_values, color=palette[3])
     p5 = plt.bar(ind, class_five_values, width, bottom=class_one_values + class_two_values + class_three_values +class_four_values, color=palette[4])
     p6 = plt.bar(ind, class_six_values, width, bottom=class_one_values + class_two_values + class_three_values +class_four_values + class_five_values, color=palette[5])
-    #p7 = plt.bar(ind, class_seven_values, width, bottom = class_one_values + class_two_values + class_three_values +class_four_values + class_five_values + class_six_values, color=palette[6])
+    p7 = plt.bar(ind, class_seven_values, width, bottom = class_one_values + class_two_values + class_three_values +class_four_values + class_five_values + class_six_values, color=palette[6])
     #p8 = plt.bar(ind, class_eight_values, width, bottom = class_one_values + class_two_values + class_three_values +class_four_values + class_five_values + class_six_values + class_seven_values, color=palette[7])
     #p9 = plt.bar(ind, class_nine_values, width, bottom = class_one_values + class_two_values + class_three_values +class_four_values + class_five_values + class_six_values + class_seven_values + class_eight_values, color=palette[8])
 
-    plt.ylabel('Examined Trends')
-    plt.title('Classification on a 250 hours dataset')
+    plt.ylabel('Trends Processed')
+    plt.title('Classification on a 1000 Hours Dataset')
     plt.xticks(ind, ('Google', 'Twitter', 'Wikipedia', 'Twi-Goo', 'Twi-Wiki',
                      'Goo-Wiki', 'Goo-Twi-Wiki'))
-    plt.yticks(np.arange(0, 56, 5))
-    plt.legend((p1[0], p2[0], p3[0], p4[0], p5[0], p6[0]), 
-                (classes[0], classes[1], classes[2], classes[3], classes[4], classes[5]))
+    #plt.yticks(np.arange(0, 56, 5))
+    plt.legend((p1[0], p2[0], p3[0], p4[0], p5[0], p6[0], p7[0]), 
+              (classes[0], classes[1], classes[2], classes[3], classes[4], classes[5], classes[6]))
 
     plt.show()
 
@@ -309,28 +319,29 @@ print('''
 Automatic trend and sentiment dataset analyzer
 ''')
 client = MongoClient('mongodb://127.0.0.1:27017')
-db = client.searsendb_us
-#db = client.searsendb_us_2
+
+# Available databases 
+db = client.searsendb_us_2
 #db = client.searsendb_it
+
 result = db.trends.find(no_cursor_timeout=True)
 pp = pprint.PrettyPrinter(indent=4)
 
 analysis = input('''
 Choose the analysis: 
 1 - classify and plot 
-2 - trend first appearence
+2 - classify and plot with amount
 3 - trend lifecycle 
 4 - trend polarization
-5 - coming soon
+5 - trend first appearence
 => ''')
 
 if int(analysis) == 1:
-    # Manually classify the most famous trends and plot the result
-    classify_and_plot(result)
+    # Manually classify the n most famous trends
+    classify_and_plot(result, 50)
 elif int(analysis) == 2:
-    # Estimate the first arrival of each trend found in 2 or more sources
-    appearences = trend_first_appearence(result)
-    print(appearences)
+    # Manually classify the n most famous trends counting the amount of times they were in the trends
+    classify_and_plot(result, 50, True)
 elif int(analysis) == 3:
     # Evaluate the lifecycle of each trend
     lifecycle = trend_lifecycle(result)
@@ -345,7 +356,9 @@ elif int(analysis) == 4:
         if(polarization[keyword]['boolean']): polarized += 1
     print('\n' + str(polarized) + ' keywords out of ' + str(total) + ' unique keywords are polarized')
 elif int(analysis) == 5:
-    # Coming soon
-    pass
+    # Estimate the first arrival of each trend found in 2 or more sources (no keyword matching)
+    appearences = trend_first_appearence(result)
+    print(appearences)
 else:
     print('Nothing to do here!')
+result.close()
