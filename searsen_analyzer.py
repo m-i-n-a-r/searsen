@@ -65,29 +65,38 @@ def trend_first_appearence(trends):
         'wikipedia-keywords': []
     }
     appeared_trends = []
-    number = 0
-    for document in trends:
-        number += 1
-        print('Processing document number ' + str(number))
-        # Ordered by data update times
-        for twitter_trend in text_processing(document['twitter']):
-            if twitter_trend['processed'] not in appeared_trends and trend_alltime_existence(twitter_trend['processed'], 'twitter') and not trend_contemporary_existence(document, twitter_trend['processed'], 'twitter'): 
-                first_arrival['twitter'] += 1
-                first_arrival['twitter-keywords'].append(twitter_trend['original'])
-                appeared_trends.append(twitter_trend['processed'])
-                print('Added to Twitter')
-        for google_trend in text_processing(document['google']):
-            if google_trend['processed'] not in appeared_trends and trend_alltime_existence(google_trend['processed'], 'google') and not trend_contemporary_existence(document, google_trend['processed'], 'google'): 
-                first_arrival['google'] += 1
-                first_arrival['google-keywords'].append(google_trend['original'])
-                appeared_trends.append(google_trend['processed'])
-                print('Added to Google')
-        for wikipedia_trend in text_processing(document['wikipedia']):
-            if wikipedia_trend['processed'] not in appeared_trends and trend_alltime_existence(wikipedia_trend['processed'], 'wikipedia') and not trend_contemporary_existence(document, wikipedia_trend['processed'], 'wikipedia'): 
-                first_arrival['wikipedia-keywords'].append(wikipedia_trend['original'])
-                first_arrival['wikipedia'] += 1
-                appeared_trends.append(wikipedia_trend['processed'])
-                print('Added to Wikipedia')
+    document_number = 0
+
+    while True:
+        trends = db.trends.find(no_cursor_timeout=True).skip(document_number)
+
+        try:
+            for document in trends:
+                print('Processing document number ' + str(document_number + 1))
+                # Ordered by data update times
+                for twitter_trend in text_processing(document['twitter']):
+                    if twitter_trend['processed'] not in appeared_trends and trend_alltime_existence(twitter_trend['processed'], 'twitter') and not trend_contemporary_existence(document, twitter_trend['processed'], 'twitter'): 
+                        first_arrival['twitter'] += 1
+                        first_arrival['twitter-keywords'].append(twitter_trend['original'])
+                        appeared_trends.append(twitter_trend['processed'])
+                        print('Added to Twitter')
+                for google_trend in text_processing(document['google']):
+                    if google_trend['processed'] not in appeared_trends and trend_alltime_existence(google_trend['processed'], 'google') and not trend_contemporary_existence(document, google_trend['processed'], 'google'): 
+                        first_arrival['google'] += 1
+                        first_arrival['google-keywords'].append(google_trend['original'])
+                        appeared_trends.append(google_trend['processed'])
+                        print('Added to Google')
+                for wikipedia_trend in text_processing(document['wikipedia']):
+                    if wikipedia_trend['processed'] not in appeared_trends and trend_alltime_existence(wikipedia_trend['processed'], 'wikipedia') and not trend_contemporary_existence(document, wikipedia_trend['processed'], 'wikipedia'): 
+                        first_arrival['wikipedia-keywords'].append(wikipedia_trend['original'])
+                        first_arrival['wikipedia'] += 1
+                        appeared_trends.append(wikipedia_trend['processed'])
+                        print('Added to Wikipedia')
+                document_number += 1
+            trends.close()
+            break
+
+        except: print("Cursor lost, retrying with skip")
 
     return first_arrival
 
