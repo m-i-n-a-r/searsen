@@ -119,11 +119,11 @@ def hybrid_matching(trend_one, trend_two):
 def get_all_matches(google_trending, twitter_trending, wikipedia_trending):
     matches = {}
     # Syntactic matching seems to be the best for a list of keywords and hashtags
-    main_match = syntactic_matching(twitter_trending, google_trending)
+    main_match = hybrid_matching(twitter_trending, google_trending)
     matches['twitter-google'] = main_match
-    matches['google-wikipedia'] = syntactic_matching(google_trending, wikipedia_trending)
-    matches['twitter-wikipedia'] = syntactic_matching(twitter_trending, wikipedia_trending)
-    matches['google-twitter-wikipedia'] = syntactic_matching(main_match, wikipedia_trending)
+    matches['google-wikipedia'] = hybrid_matching(google_trending, wikipedia_trending)
+    matches['twitter-wikipedia'] = hybrid_matching(twitter_trending, wikipedia_trending)
+    matches['google-twitter-wikipedia'] = hybrid_matching(main_match, wikipedia_trending)
     return matches
 
 # Compute the metrics (precision, recall, f-measure) for a given result of a matching algorithm

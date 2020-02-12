@@ -44,6 +44,7 @@ Searsen uses some third party software to work properly. Some examples are:
 - **Pymongo** (MongoDB Atlas or local)
 - **Difflib**
 - **Sematch** (manual modification needed to adapt the library to Python 3 at the time of writing)
+- **Python-Levenshtein**
 - **FuzzyWuzzy**
 - **Tagme**
 - **Matplotlib**
