@@ -44,7 +44,6 @@ def update_trending_mongo(google_trending, twitter_trending, wikipedia_trending,
 
     # Remove the "." character (only found in Twiter until now) since it causes an error in MongoDB
     twitter_trending_correct = []
-    print(twitter_trending)
     for trend in twitter_trending:
         trend = trend.replace('.', '')
         twitter_trending_correct.append(trend)
