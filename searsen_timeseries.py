@@ -19,13 +19,13 @@ Choose the data folder (default: 1)
 2 - Twitter
 3 - Wikipedia
 -> ''')
-    if(data_path == '1'): chosen_data_path = data_path_google
-    elif(data_path == '2'): chosen_data_path = data_path_twitter
-    elif(data_path == '3'): chosen_data_path = data_path_wikipedia
+    if data_path == '1': chosen_data_path = data_path_google
+    elif data_path == '2': chosen_data_path = data_path_twitter
+    elif data_path == '3': chosen_data_path = data_path_wikipedia
     else: chosen_data_path = data_path_google
 
     files = os.listdir(chosen_data_path)
-    if(not files): sys.exit('\nThe selected data folder is empty')
+    if not files: sys.exit('\nThe selected data folder is empty')
 
     print('\nChoose the desired file number')
     for i in range(len(files)): print(str(i) + ' - ' + files[i])
@@ -34,7 +34,7 @@ Choose the data folder (default: 1)
     except ValueError:
         print('\nInvalid argument, using the first listed file')
         value = 0
-    if(not files[value]): 
+    if not files[value]: 
         print('\nInvalid argument, using the first listed file')
         value = 0 
     file_path = data_path_google + files[value]
@@ -62,16 +62,16 @@ Do you want to extract data? (default: 3)
 3 - Extract from Wikipedia
 4 - Skip extraction
 -> ''')
-if(extraction_pref == '1'): 
+if extraction_pref == '1': 
     subprocess.call('python extraction_google.py', shell=True)
     analyze_data()
-elif(extraction_pref == '2'): 
+elif extraction_pref == '2': 
     subprocess.call('python extraction_twitter.py', shell=True)
     analyze_data()
-elif(extraction_pref == '3'): 
+elif extraction_pref == '3': 
     subprocess.call('python extraction_wikipedia.py', shell=True)
     analyze_data()
-elif(extraction_pref == '4'): 
+elif extraction_pref == '4': 
     analyze_data()
 else: 
     print('\nInvalid argument, using default')

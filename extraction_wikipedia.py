@@ -16,7 +16,7 @@ def fetch_timeseries_wikipedia(keyword, save_csv = True):
         return None
 
     # Save in a csv if needed
-    if(save_csv): 
+    if save_csv: 
         # Csv naming and path
         data_path = 'data/wikipedia/'
         if not os.path.exists(data_path): os.makedirs(data_path)
@@ -40,11 +40,11 @@ def fetch_trending_wikipedia(cut = 0):
         trends = pageviewapi.top('en.wikipedia', year, month, day, access='all-access')
         counter = 0
         for article in trends['items'][0]['articles']:
-            if(article['article'] in special_pages): continue
+            if article['article'] in special_pages: continue
             else: 
                 trends_final.append(article['article'])
                 counter += 1
-                if(counter == cut + 1): break
+                if counter == cut + 1: break
     # The data may not be ready around midnight
     except:
         return 'Data not ready'
@@ -55,7 +55,7 @@ def fetch_trending_wikipedia(cut = 0):
 if __name__ == '__main__':
     # Variabled needed (tries to take it from user or use default)
     input_keyword = input('\nInsert a keyword (default: Donald_Trump) -> ')
-    if(not input_keyword.strip()):
+    if not input_keyword.strip():
         keyword = 'Donald_Trump'
     else:
         keyword = input_keyword

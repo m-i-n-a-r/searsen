@@ -14,7 +14,7 @@ def fetch_timeseries_google(keywords, time_window, save_csv = True):
     interest_over_time_df = pytrend.interest_over_time()
 
     # Save in a csv if needed
-    if(save_csv):
+    if save_csv:
         # Csv naming and path, converting to csv using Pandas
         data_path = 'data/google/'
         if not os.path.exists(data_path): os.makedirs(data_path)
@@ -50,7 +50,7 @@ if __name__ == '__main__':
     # Variabled needed (tries to take it from user or use default)
     separator = ','
     input_keywords = input('\nInsert an array of comma separated keywords (default: trump, clinton) -> ')
-    if(not input_keywords.strip()): keywords = ['trump', 'clinton']
+    if not input_keywords.strip(): keywords = ['trump', 'clinton']
     else: keywords = input_keywords.split(separator)
     input_time_window = input(
     '''
@@ -60,10 +60,10 @@ Insert the time window (default: 2)
 3 - Last 3 months (daily)
 4 - Last week (hourly)
 -> ''')
-    if(input_time_window == '1'): time_window = 'all'
-    elif(input_time_window == '2'): time_window = 'today 5-y'
-    elif(input_time_window == '3'): time_window = 'today 3-m'
-    elif(input_time_window == '4'): time_window = 'now 7-d'
+    if input_time_window == '1': time_window = 'all'
+    elif input_time_window == '2': time_window = 'today 5-y'
+    elif input_time_window == '3': time_window = 'today 3-m'
+    elif input_time_window == '4': time_window = 'now 7-d'
     else: 
         print ('\nInvalid value, default set')
         time_window = 'today 5-y'

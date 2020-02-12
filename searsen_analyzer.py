@@ -175,16 +175,16 @@ def catalog_trends(trends, source):
     match_counter = {}
     for document in trends:
         matches = []   
-        if(source == 'google'): matches = document['google']
-        elif(source == 'twitter'): matches = document['twitter']
-        elif(source == 'wikipedia'): matches = document['wikipedia']
-        elif(source == 'twitter-google'): matches = document['matches']['twitter-google']
-        elif(source == 'twitter-wikipedia'): matches = document['matches']['twitter-wikipedia']
-        elif(source == 'google-wikipedia'): matches = document['matches']['google-wikipedia']
-        elif(source == 'google-twitter-wikipedia'): matches = document['matches']['google-twitter-wikipedia']
+        if source == 'google': matches = document['google']
+        elif source == 'twitter': matches = document['twitter']
+        elif source == 'wikipedia': matches = document['wikipedia']
+        elif source == 'twitter-google': matches = document['matches']['twitter-google']
+        elif source == 'twitter-wikipedia': matches = document['matches']['twitter-wikipedia']
+        elif source == 'google-wikipedia': matches = document['matches']['google-wikipedia']
+        elif source == 'google-twitter-wikipedia': matches = document['matches']['google-twitter-wikipedia']
         else: matches = document['google']
 
-        if(isinstance(matches, list) and matches):
+        if isinstance(matches, list) and matches:
             for trend in matches:
                 if trend in match_counter: match_counter[trend] += 1
                 else: match_counter[trend] = 1
@@ -204,19 +204,19 @@ def manual_classification(trends, classes, amount, cut = 30, sentiment = {}):
     print()
     for trend in trends:
         elaborated += 1
-        if(sentiment): 
+        if sentiment: 
             try: print('The detected sentiment for the following trend was: ' + str(sentiment[trend]))
             except: pass
         classified = input('Classify the trend: ' + str(trend) + ', occurred ' + str(trends[trend]) + ' times => ')
         try: trend_class = classes[int(classified)]
         except: 
             print('Invalid value, trend skipped')
-            if(elaborated == cut): break
+            if elaborated == cut: break
             continue
         # Choose to consider the amount of times a trend appeared or not 
-        if(not amount): classification[trend_class] += 1
+        if not amount: classification[trend_class] += 1
         else: classification[trend_class] += trends[trend]
-        if(elaborated == cut): break
+        if elaborated == cut: break
 
     print('\nClassified ' + str(elaborated) + ' trends.')
     return classification
@@ -362,7 +362,7 @@ elif int(analysis) == 4:
     total = len(polarization)
     polarized = 0
     for keyword in polarization:
-        if(polarization[keyword]['boolean']): polarized += 1
+        if polarization[keyword]['boolean']: polarized += 1
     print('\n' + str(polarized) + ' keywords out of ' + str(total) + ' unique keywords are polarized')
 elif int(analysis) == 5:
     # Estimate the first arrival of each trend found in 2 or more sources (no keyword matching)

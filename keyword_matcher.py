@@ -17,13 +17,13 @@ tagme.GCUBE_TOKEN = tagme_token
 # Process the trends to be easily comparable, keeping the original strings
 def text_processing(trend_list, keep_spaces = False):
     processed_list = []
-    if(not isinstance(trend_list, list)): return []
+    if not isinstance(trend_list, list): return []
     for trend in trend_list:
         processed_trend = {}
         processed_trend['original'] = trend
         trend = re.sub(' +', ' ', trend) # Remove multiple spaces (redundant, but useful to keep the single spaces if needed)
         # Keep the spaces in the smartest way possible
-        if(keep_spaces == True): 
+        if keep_spaces == True: 
             a = re.compile('((?<=[a-z0-9])[A-Z]|(?!^)[A-Z](?=[a-z]))')
             trend = a.sub(r' \1', trend).lower()
             trend = re.sub(' +', ' ', trend)
@@ -38,7 +38,7 @@ def naive_matching(trend_one, trend_two):
     trend_two_processed = text_processing(trend_two)
     matches = list({x['original'] for x in trend_one_processed for y in trend_two_processed if x['processed'] == y['processed']})
 
-    if(len(matches) == 0): return 'No matches'
+    if len(matches) == 0: return 'No matches'
     return matches
 
 # Compare two lists of trends using an euristic, also accepting partial matches
@@ -47,7 +47,7 @@ def syntactic_matching(trend_one, trend_two):
     trend_two_processed = text_processing(trend_two)
     matches = list({x['original'] for x in trend_one_processed for y in trend_two_processed if x['processed'] in y['processed'] or y['processed'] in x['processed']})
     
-    if(len(matches) == 0): return 'No matches'
+    if len(matches) == 0: return 'No matches'
     return matches
 
 # Compare two lists of trends using the fuzzy distances
@@ -62,15 +62,15 @@ def fuzzy_matching(trend_one, trend_two, threshold = 90):
             fuzz.token_sort_ratio(keyword_one['processed'], keyword_two['processed']) > threshold):
                 matches.append(keyword_one['original'])
 
-    if(len(matches) == 0): return 'No matches'
+    if len(matches) == 0: return 'No matches'
     return list(set(matches))
 
 # Compare two lists of trends using the difflib library (no text processing required)
 def sequence_matching(trend_one, trend_two, threshold = 0.5):
-    if(not isinstance(trend_one, list) or not isinstance(trend_two, list)): return 'No matches'
+    if not isinstance(trend_one, list) or not isinstance(trend_two, list): return 'No matches'
     matches = list({x for x in trend_one for y in trend_two if difflib.SequenceMatcher(None, x, y).ratio() > threshold})
     
-    if(len(matches) == 0): return 'No matches'
+    if len(matches) == 0: return 'No matches'
     return matches
 
 # Compare two lists of trends using a semantic approach
@@ -83,7 +83,7 @@ def semantic_matching(trend_one, trend_two):
     matches = list({x['original'] for x in trend_one_processed for y in trend_two_processed 
                     if wns.word_similarity(x['processed'], y['processed'], 'li') > treshold})
     
-    if(len(matches) == 0): return 'No matches'
+    if len(matches) == 0: return 'No matches'
     return matches
 
 # Compare two lists of trends using Tagme annotations TODO doesn't work as expected
@@ -96,9 +96,9 @@ def tagme_matching(trend_one, trend_two):
         for keyword_two in trend_two_processed:
             relations = tagme.relatedness_title((keyword_one['processed'], keyword_two['processed']))
             print('Comparing ' + keyword_one['processed'] + ' and ' + keyword_two['processed'])
-            if(relations.relatedness[0].rel and int(relations.relatedness[0].rel) > 0): matches.append(keyword_one['original'])
+            if relations.relatedness[0].rel and int(relations.relatedness[0].rel) > 0: matches.append(keyword_one['original'])
 
-    if(len(matches) == 0): return 'No matches'
+    if len(matches) == 0: return 'No matches'
     return matches
 
 # Compare two lists of trends using an euristic, the fuzzy distances and some particular conditions based on domain knowledge
@@ -112,7 +112,7 @@ def hybrid_matching(trend_one, trend_two):
     matches_fuzzy = fuzzy_matching(trend_one, trend_two)
     matches = list(set().union(matches, matches_fuzzy))
 
-    if(len(matches) == 0): return 'No matches'
+    if len(matches) == 0: return 'No matches'
     return matches
 
 # Build a dictionary with the matches between each combination of the three sources using the above functions
@@ -247,7 +247,7 @@ Choose the analysis:
     "EMA", "China", "HappyLunarNewYear", "ChrisWattsConfessions", "Joe Rogan", "Mr. Bean", "Ms. Jackson",
     "Impeachment", "Panda", "helicoptercrash", "Hilary Clinton", "Virginia", "Gun Rally"]
  
-    if(int(analysis) == 1):
+    if int(analysis) == 1:
         print('\nSemantic Matching:')
         semantic = semantic_matching(list_one, list_two)
         data_semantic = compute_metrics(semantic, matches)
@@ -278,11 +278,11 @@ Choose the analysis:
     
         print('\nNUMBER OF MATCHINGS FOR THE TEST LISTS: ' + str(len(matches)) + '\n')
     
-    elif(int(analysis) == 2):
+    elif int(analysis) == 2:
         aggregated_data_sequence = []
         for i in range(0,101,5):
             threshold = i / 100
-            if(threshold == 1): threshold = 0.99
+            if threshold == 1: threshold = 0.99
             print('\nSequence Matching, threshold: ' + str(threshold))
             sequence = sequence_matching(list_one, list_two, threshold)
             data_sequence = compute_metrics(sequence, matches)
@@ -290,11 +290,11 @@ Choose the analysis:
         plot_roc_curve(aggregated_data_sequence)
         plot_precision_recall_curve(aggregated_data_sequence)
 
-    elif(int(analysis) == 3):
+    elif int(analysis) == 3:
         aggregated_data_fuzzy = []
         for i in range(0,101,5):
             threshold = i
-            if(threshold == 100): threshold = 99
+            if threshold == 100: threshold = 99
             print('\nFuzzy Matching, threshold: ' + str(threshold))
             fuzzy = fuzzy_matching(list_one, list_two, threshold)
             data_fuzzy = compute_metrics(fuzzy, matches)

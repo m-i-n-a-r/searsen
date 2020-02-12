@@ -28,7 +28,7 @@ def update_trending_csv(google_trending, twitter_trending, wikipedia_trending, m
 
     # Write the trending topics in a csv file
     f = Path(trending_file)
-    if(not f.is_file()): 
+    if not f.is_file(): 
         with open(trending_file, 'a', newline='', encoding='utf-8') as f:
             wr = csv.writer(f, delimiter=';')
             wr.writerow(['timpestamp', 'topics_google', 'topics_twitter', 'topics_wikipedia', 'matching_trends', 'sentiment', 'sentiment_expanded'])
@@ -39,7 +39,7 @@ def update_trending_csv(google_trending, twitter_trending, wikipedia_trending, m
 # Add the current time and two lists of trends, plus a sample of tweets, in a mongodb table
 def update_trending_mongo(google_trending, twitter_trending, wikipedia_trending, tweet_sample, matches, sentiment, sentiment_expanded, local = True):
     # Connect to MongoDB Atlas or to a local MongoDB installation
-    if(local == False): client = MongoClient('mongodb+srv://' + mongo_username + ':' + mongo_password + '@searsen-fyfvz.mongodb.net/test?retryWrites=true&w=majority')
+    if local == False: client = MongoClient('mongodb+srv://' + mongo_username + ':' + mongo_password + '@searsen-fyfvz.mongodb.net/test?retryWrites=true&w=majority')
     else: client = MongoClient('mongodb://127.0.0.1:27017')
 
     # Remove the "." character (only found in Twiter until now) since it causes an error in MongoDB
@@ -121,7 +121,7 @@ matches = get_all_matches(google_trending, twitter_trending, wikipedia_trending)
 print('Matches computed')
 
 # Check if the tweet sample should be skipped in the current execution
-if(tweet_sample_skip == 0): 
+if tweet_sample_skip == 0: 
     tweet_sample = fetch_sample(matches['twitter-google'], tweet_sample_amount)
     print('Fetched tweet sample')
     # Live sentiment analysis on the google-twitter matches (trinary aggregated, scale not aggregated)

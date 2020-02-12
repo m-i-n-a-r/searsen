@@ -22,7 +22,7 @@ def fetch_timeseries_twitter(keyword, save_csv = True):
     tweets_df = pd.DataFrame(vars(tweets[i]) for i in range(len(tweets)))
 
     # Save in a csv if needed
-    if(save_csv): 
+    if save_csv: 
         # Csv naming and path, converting to csv using Pandas
         data_path = 'data/twitter/'
         if not os.path.exists(data_path): os.makedirs(data_path)
@@ -46,13 +46,13 @@ def fetch_trending_twitter():
 
 # Fetch a sample of n tweets for each keyword in a given list
 def fetch_sample(keywords, amount, no_replies = False):
-    if(not isinstance(keywords, list)): return 'No matching topics'
+    if not isinstance(keywords, list): return 'No matching topics'
     sample_dict = {}
     # Fill the dict with the keyword as the key and the tweets as the value
     try:
         for keyword in keywords:
             tweets = []
-            if(no_replies): query = keyword + ' -filter:retweets -filter:replies'
+            if no_replies: query = keyword + ' -filter:retweets -filter:replies'
             else: query = keyword + ' -filter:retweets'
             # Take the full text of each tweet and manage the 100 tweets for request problem (retweets don't have the full text)
             tweet_items = tweepy.Cursor(api.search, q=query, result_type='recent', lang = 'en', tweet_mode='extended').items(amount)
@@ -67,7 +67,7 @@ def fetch_sample(keywords, amount, no_replies = False):
 if __name__ == '__main__':
     # Variabled needed (tries to take it from user or use default)
     input_keyword = input('\nInsert a keyword (default: trump) -> ')
-    if(not input_keyword.strip()): keyword = 'trump'
+    if not input_keyword.strip(): keyword = 'trump'
     else: keyword = input_keyword
 
     fetch_timeseries_twitter(keyword)
