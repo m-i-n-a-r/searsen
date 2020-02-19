@@ -51,6 +51,7 @@ def fetch_sample(keywords, amount, no_replies = False):
     # Fill the dict with the keyword as the key and the tweets as the value
     try:
         for keyword in keywords:
+            if len(keyword) == 1: continue
             tweets = []
             if no_replies: query = keyword + ' -filter:retweets -filter:replies'
             else: query = keyword + ' -filter:retweets'

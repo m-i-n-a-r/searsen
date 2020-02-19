@@ -248,8 +248,8 @@ def classify_and_plot(result, cut = 30, amount = False):
 
     # Manually classify the n most famous trends in each group
     classes_topics = ['Politic', 'Sport', 'Music', 'Film, TV, Games, Books', 'Death Related', 'Viral Trends', 'Other']
-    classes_topics_2 = ['Politic', 'Sport', 'Entertainment', 'Health', 'Celebrity Death', 'Social and Public Trend', 'Other']
-    classes_entities = ['Person', 'Location', 'Event', 'Animal', 'Fictional', 'Disease', 'Other']
+    classes_topics_2 = ['Politic', 'Sport', 'Entertainment', 'Health', 'Celebrity Death', 'Social and Public', 'Tech and Economy']
+    classes_entities = ['Person', 'Location', 'Event or Trend', 'Animal', 'Film and Fictional', 'Disease', 'Other']
     classes_feelings = ['Fear', 'Apprehension', 'Approvation', 'Curiosity', 'Anger', 'Confusion', 'Ambiguous']
     classes_opinions = ['Negative Opinions', 'Polarized Opinions', 'Positive Opinions', 'No Opinion']
     classes_list = [classes_topics, classes_topics_2, classes_entities, classes_feelings, classes_opinions]
@@ -299,7 +299,7 @@ def classify_and_plot(result, cut = 30, amount = False):
     plt.title('Classification on a 1000 Hours Dataset')
     plt.xticks(ind, ('Google', 'Twitter', 'Wikipedia', 'Twi-Goo', 'Twi-Wiki',
                      'Goo-Wiki', 'Goo-Twi-Wiki'))
-    #plt.yticks(np.arange(0, 56, 5))
+    if not amount: plt.yticks(np.arange(0, cut+6, 5))
     plt.legend((p1[0], p2[0], p3[0], p4[0], p5[0], p6[0], p7[0]), 
               (classes[0], classes[1], classes[2], classes[3], classes[4], classes[5], classes[6]))
 
