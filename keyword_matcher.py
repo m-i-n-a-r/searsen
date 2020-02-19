@@ -110,7 +110,7 @@ def hybrid_matching(trend_one, trend_two):
                     ((len(x['original']) == len(y['original']) < 4 or (len(x['original']) > 3 and len(y['original']) > 3)))})
     
     matches_fuzzy = fuzzy_matching(trend_one, trend_two)
-    matches = list(set().union(matches, matches_fuzzy))
+    if isinstance(matches_fuzzy, list): matches = list(set().union(matches, matches_fuzzy))
 
     if len(matches) == 0: return 'No matches'
     return matches
