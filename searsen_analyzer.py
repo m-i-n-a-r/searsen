@@ -143,13 +143,13 @@ def estimate_polarization(sentiment):
     negative = 0
     positive = 0
     total = 0
-    treshold = 30
+    treshold = 5
     result = {}
     for rate in sentiment:
         total += 1
         if float(rate) >= 0.25: positive += 1
         if float(rate) <= -0.25: negative += 1
-    if positive + negative > total // 2 and negative > treshold and positive > treshold: 
+    if positive + negative > total // 5 and negative > treshold and positive > treshold: 
         result['description'] = 'Polarized with ' + str(positive) + ' positives and ' + str(negative) + ' negatives'
         result['boolean'] = True
     else: 
@@ -159,6 +159,25 @@ def estimate_polarization(sentiment):
     result['positives'] = positive
     result['negatives'] = negative
     return result
+
+# Count the number of positive and negative sentiments
+def sentiment_count(trends):
+    treshold = 20
+    sentiments = {}
+    sentiments['positive'] = 0
+    sentiments['negative'] = 0
+    sentiments['neutral'] = 0
+    already_processed = []
+    for document in trends:
+        if isinstance(document['sentiment'], dict):
+            for keyword in document['sentiment']:
+                if keyword not in already_processed:
+                    if int(document['sentiment'][keyword]['value']) > treshold: sentiments['positive'] += 1
+                    elif int(document['sentiment'][keyword]['value']) < -treshold: sentiments['negative'] += 1
+                    else: sentiments['neutral'] +=1
+                    already_processed.append(keyword)
+
+    return sentiments
 
 # Compute the mean value of the sentiment collected on a certain trend
 def compute_sentiment(trends):
@@ -230,6 +249,7 @@ def get_multi_dictionary_values(dicts, key_name):
                 values.append(dict[key])
     return values
 
+# Classify a list of keywords in a set of classes and plot the result
 def classify_and_plot(result, cut = 30, amount = False):
     # The result has to be taken again from the db for the functions to work
     google = catalog_trends(result, 'google')
@@ -330,7 +350,7 @@ Automatic trend and sentiment dataset analyzer
 client = MongoClient('mongodb://127.0.0.1:27017')
 
 # Available databases 
-db = client.searsendb_us_2
+db = client.searsendb_us
 #db = client.searsendb_it
 
 result = db.trends.find(no_cursor_timeout=True)
@@ -343,6 +363,7 @@ Choose the analysis:
 3 - trend lifecycle 
 4 - trend polarization
 5 - trend first appearence
+6 - total sentiment count
 => ''')
 
 if int(analysis) == 1:
@@ -362,12 +383,18 @@ elif int(analysis) == 4:
     total = len(polarization)
     polarized = 0
     for keyword in polarization:
-        if polarization[keyword]['boolean']: polarized += 1
+        if polarization[keyword]['boolean']: 
+            polarized += 1
+            print(keyword)
     print('\n' + str(polarized) + ' keywords out of ' + str(total) + ' unique keywords are polarized')
 elif int(analysis) == 5:
     # Estimate the first arrival of each trend found in 2 or more sources (no keyword matching)
     appearences = trend_first_appearence(result)
     print(appearences)
+elif int(analysis) == 6:
+    # Evaluate the number of positive and negative sentiment for each query
+    sentiment_count = sentiment_count(result)
+    print(str(sentiment_count['positive']) + ' positive sentiments, ' + str(sentiment_count['negative']) + ' negative sentiments and ' + str(sentiment_count['neutral']) + ' neutral')
 else:
     print('Nothing to do here!')
 result.close()
